@@ -1,0 +1,12 @@
+{
+    "claudeCode.preferredLocation": "panel",
+    "liveServer.settings.donotShowInfoMsg": true,
+    "workbench.editor.enablePreview": false,
+    "workbench.statusBar.visible": false,
+    "editor.minimap.enabled": false,
+    "editor.formatOnSave": true,
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+
+}

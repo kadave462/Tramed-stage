@@ -1,0 +1,8 @@
+# Memory Index
+
+- [User Profile](user_profile.md) — Complete beginner, building Tramed Pharmacy app, learns by doing
+- [Project Goal](project_goal.md) — Pharmacy management web app for PHARMACIE TRAMED LTD; dual goal: ship features + teach web dev
+- [Teaching Style](feedback_teaching_style.md) — User does all steps themselves; give numbered instructions, never execute silently
+- [Sales Table Example](example_sales_table.md) — 3-row CSV example (Paracetamol/Amoxicillin/Ibuprofen) mapping to Sale table, explains rowsImported
+</content>
+</invoke>

@@ -1,0 +1,20 @@
+const express = require('express')
+const app = express()
+
+const { PrismaClient } = require('@prisma/client')
+const prisma = new PrismaClient()
+
+app.use(express.json())
+app.use(express.static('public'))
+
+app.get('/api/sales', async function(req, res) {
+  const sales = await prisma.sale.findMany()
+  res.send('<h1>Hello from Tramed Pharmacy!</h1><pre>' + JSON.stringify(sales) + '</pre>')
+  console.log('someone visited http://localhost:3000/api/sales')
+
+})
+
+
+app.listen(3000, function() {
+  console.log('Server started on http://localhost:3000')
+})

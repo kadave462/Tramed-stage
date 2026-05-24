@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Tramed Pharmacy</title>
+  </head>
+
+  <body>
+
+    <h1>Welcome to Tramed Pharmacy</h1>
+    <p>Your daily pharmacy management system.</p>
+
+    <h2>Today's Summary</h2>
+    <p>Here is what happened in the pharmacy today:</p>
+
+    <ul>
+      <li>Total invoices: 37</li>
+      <li>Total revenue: 352,000 RWF</li>
+      <li>Products low on stock: 4</li>
+    </ul>
+
+    <h2>Today's Sales</h2>
+
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Invoice</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Total (RWF)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>101857</td>
+          <td>FEBRILEX Tablet</td>
+          <td>8</td>
+          <td>1,200</td>
+        </tr>
+        <tr>
+          <td>101858</td>
+          <td>IBUPROFEN 400mg</td>
+          <td>10</td>
+          <td>300</td>
+        </tr>
+        <tr>
+          <td>101859</td>
+          <td>ALCOOL SWAB PAD</td>
+          <td>4</td>
+          <td>200</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </body>
+
+</html>
