@@ -1,3 +1,7 @@
+require("dotenv").config({
+  path: require("path").join(__dirname, ".env"),
+  debug: true,
+});
 const express = require("express");
 const app = express();
 
@@ -6,15 +10,14 @@ const xlsx = require("xlsx");
 
 const upload = multer({ storage: multer.memoryStorage() });
 const SALES_MAPPING = {
-  "INVOICE ID": "invoiceId",
+  ID_INVOICE: "invoiceId",
   DATE: "date",
-  "PRODUCT CODE": "productCode",
-  "PRODUCT NAME": "productName",
-  QUANTITY: "quantity",
+  CODE: "productCode",
+  NAME_PRODUCT: "productName",
+  QUANTITE: "quantity",
   PRICE: "unitPrice",
-  "COST PRICE": "costPrice",
+  PRICE_REVIENT: "costPrice",
   TOTAL: "totalAmount",
-  "TOTAL COST": "totalCost",
 };
 
 const STOCK_MAPPING = {
@@ -71,7 +74,6 @@ app.post("/api/upload", upload.single("file"), async function (req, res) {
       : headers.includes("QTY_START")
         ? "Stock"
         : null;
-    res.status(200).json({ message: "fine" });
     console.log("fileType:", fileType);
     if (!fileType) return res.status(400).json({ error: "Unknown file type" });
     const mapping = fileType === "Sales" ? SALES_MAPPING : STOCK_MAPPING;
@@ -80,11 +82,27 @@ app.post("/api/upload", upload.single("file"), async function (req, res) {
       const record = {};
       for (const csvColumn of Object.keys(mapping)) {
         const dbField = mapping[csvColumn];
+        record[dbField] = row[csvColumn];
       }
+      record.date = parseExpiry(row["DATE"]);
       records.push(record);
+      console.log(records);
     }
+    await prisma.sale.createMany({ data: records, skipDuplicates: true });
+    res.json({ fileType, rowsImported: records.length });
   } catch (err) {
     console.error("Upload error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/sales", async function (req, res) {
+  try {
+    await prisma.sale.deleteMany();
+    res.json({ message: "All sales deleted" });
+    console.log("deleted");
+  } catch (err) {
+    console.error("Delete error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });

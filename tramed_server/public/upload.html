@@ -1,132 +1,133 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PHARMACIE TRAMED LTD — Upload Data</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <style>
-        :root {
-            --green-dark: #0d5c36;
-            --green-mid: #1a7a4a;
-        }
+      :root {
+        --green-dark: #0d5c36;
+        --green-mid: #1a7a4a;
+      }
 
-        body {
-            background: #f4f6f9;
-            font-family: 'Segoe UI', sans-serif;
-        }
+      body {
+        background: #f4f6f9;
+        font-family: "Segoe UI", sans-serif;
+      }
 
-        .dashboard-header {
-            background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
-            color: #fff;
-            padding: 18px 28px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
-        }
+      .dashboard-header {
+        background: linear-gradient(
+          135deg,
+          var(--green-dark) 0%,
+          var(--green-mid) 100%
+        );
+        color: #fff;
+        padding: 18px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      }
 
-        .brand {
-            font-size: 1.35rem;
-            font-weight: 700;
-        }
+      .brand {
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
 
-        .subtitle {
-            font-size: .82rem;
-            opacity: .8;
-            margin-top: 2px;
-        }
+      .subtitle {
+        font-size: 0.82rem;
+        opacity: 0.8;
+        margin-top: 2px;
+      }
 
-        .upload-card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
-            max-width: 560px;
-            margin: 40px auto;
-        }
+      .upload-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        max-width: 560px;
+        margin: 40px auto;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="dashboard-header">
-        <div>
-            <div class="brand"> PHARMACIE TRAMED LTD</div>
-            <div class="subtitle">Upload Data</div>
-        </div>
-        <a href="/" style="color:#fff; font-size:.85rem;">&#8592; Back to Dashboard</a>
+      <div>
+        <div class="brand">PHARMACIE TRAMED LTD</div>
+        <div class="subtitle">Upload Data</div>
+      </div>
+      <a href="/" style="color: #fff; font-size: 0.85rem"
+        >&#8592; Back to Dashboard</a
+      >
     </div>
     <div class="container">
-        <div class="upload-card">
-            <h5>Import Data</h5>
-            <p>Upload a sale or stock file — the app detects the type automatically.</p>
+      <div class="upload-card">
+        <h5>Import Data</h5>
+        <p>
+          Upload a sale or stock file — the app detects the type automatically.
+        </p>
 
-            <input type="file" id="dataFile" accept=".csv,.xlsx">
+        <input type="file" id="dataFile" accept=".csv,.xlsx" />
 
-            <button onclick="uploadFile()">Upload & Import</button>
+        <button onclick="uploadFile()">Upload & Import</button>
 
-            <div id="result"></div>
+        <div id="result"></div>
+        <div id="result2"></div>
+      </div>
 
-        </div>
+      <div>
+        <button onclick="deleteAll()">Delete All Sales</button>
+      </div>
     </div>
     <script>
-        async function uploadFile() {
-            const fileInput = document.getElementById('dataFile')
-            const resultDiv = document.getElementById('result')
+      async function uploadFile() {
+        const fileInput = document.getElementById("dataFile");
+        const resultDiv = document.getElementById("result");
 
-            if (fileInput.files.length === 0) {
-                resultDiv.innerHTML = '<div class="alert alert-warning">Please select a file first.</div>'
-                return
-            }
-
-            const fileuploaded = fileInput.files[0]
-            const formData = new FormData()
-            formData.append('file', fileuploaded)
-
-            resultDiv.innerHTML = '<div class="alert alert-info">Uploading...</div>'
-
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData
-            })
-
-            const data = await response.json()
-
-            if (response.ok) {
-                resultDiv.innerHTML = `<div class="alert alert-success">✓ Detected: <strong>${data.fileType}</strong> — Imported <strong>${data.rowsImported}</strong> rows from <strong>${fileuploaded.name}</strong></div>`
-            } else {
-                resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`
-            }
+        if (fileInput.files.length === 0) {
+          resultDiv.innerHTML =
+            '<div class="alert alert-warning">Please select a file first.</div>';
+          return;
         }
+
+        const fileuploaded = fileInput.files[0];
+        const formData = new FormData();
+        formData.append("file", fileuploaded);
+
+        resultDiv.innerHTML =
+          '<div class="alert alert-info">Uploading...</div>';
+
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          resultDiv.innerHTML = `<div class="alert alert-success">✓ Detected: <strong>${data.fileType}</strong> — Imported <strong>${data.rowsImported}</strong> rows from <strong>${fileuploaded.name}</strong></div>`;
+        } else {
+          resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+        }
+      }
+
+      async function deleteAll() {
+        const resultDiv = document.getElementById("result2");
+        const res = await fetch("/api/sales", { method: "DELETE" });
+        const data = await res.json();
+        if (res.ok) {
+          resultDiv.innerHTML = `<div class="alert alert-success">✓ deleted: <strong>${data.message}</strong> </div>`;
+          console.log("de;eted");
+        } else {
+          resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+        }
+        console.log(data.message);
+      }
     </script>
-</body>
-
+  </body>
 </html>
-
-[
-  { invoiceId: 1001, date: 46161, productName: "Paracetamol", unitPrice: 500, quantity: 2, totalAmount: 1000 },
-  { invoiceId: 1001, date: 46161, productName: "Amoxicillin", unitPrice: 1200, quantity: 1, totalAmount: 1200 },
-  { invoiceId: 1002, date: 46162, productName: "Ibuprofen",   unitPrice: 800,  quantity: 3, totalAmount: 2400 },
-]
-const records = [];
-for (const row of rows) {
-  const record = {};
-  for (const csvColumn of Object.keys(mapping)) {
-    const dbField = mapping[csvColumn];
-    record[dbField] = row[csvColumn];
-  }
-  records.push(record);
-}
-console.log("First record:", records[0]);
-return res.status(200).json({ message: "mapped", count: records.length });
-
-mapping["INVOICE ID"]    // → "invoiceId"
-mapping["DATE"]          // → "date"
-mapping["PRODUCT CODE"]  // → "productCode"
-mapping["PRODUCT NAME"]  // → "productName"
-mapping["QUANTITY"]      // → "quantity"
-mapping["PRICE"]         // → "unitPrice"
-mapping["COST PRICE"]    // → "costPrice"
-mapping["TOTAL"]         // → "totalAmount"
-mapping["TOTAL COST"]    // → "totalCost"

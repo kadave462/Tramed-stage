@@ -28,6 +28,8 @@ model Sale {
   invoiceId     Int?
   costPrice     Float?
   totalCost     Float?
+
+  @@unique([invoiceId, productCode])
 }
 
 model Stock {
