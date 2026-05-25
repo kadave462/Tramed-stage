@@ -6,5 +6,6 @@
 - [Sales Table Example](example_sales_table.md) — 3-row CSV example (Paracetamol/Amoxicillin/Ibuprofen) mapping to Sale table, explains rowsImported
 - [MVC Refactor Plan](feedback_mvc_refactor.md) — Refactor index.js into MVC structure after core features (upload, sales, stock) are working
 - [France Job Plan](project_france_job_plan.md) — User applying in France (has papers); plan: GitHub → connect dashboard → write one test
+- [Last Convo](last_convo.md) — Last session summary: upload route ETL in progress, 3 bugs to fix, Phase 3-5 still todo
 </content>
 </invoke>

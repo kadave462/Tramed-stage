@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(Start-Process \"c:\\\\Users\\\\LENOVO\\\\Desktop\\\\tramed pharmacy\\\\dashboard.html\")"
+      "PowerShell(Start-Process \"c:\\\\Users\\\\LENOVO\\\\Desktop\\\\tramed pharmacy\\\\dashboard.html\")",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
