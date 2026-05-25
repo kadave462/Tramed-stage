@@ -94,15 +94,39 @@
             const data = await response.json()
 
             if (response.ok) {
-                resultDiv.innerHTML = `<div class="alert alert-success">✓ Detected: <strong>${data.fileType}</strong> — Imported <strong>${data.rowsImported}</strong> rows from <strong>${file.name}</strong></div>`
+                resultDiv.innerHTML = `<div class="alert alert-success">✓ Detected: <strong>${data.fileType}</strong> — Imported <strong>${data.rowsImported}</strong> rows from <strong>${fileuploaded.name}</strong></div>`
             } else {
                 resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`
             }
         }
     </script>
-
-
 </body>
 
 </html>
 
+[
+  { invoiceId: 1001, date: 46161, productName: "Paracetamol", unitPrice: 500, quantity: 2, totalAmount: 1000 },
+  { invoiceId: 1001, date: 46161, productName: "Amoxicillin", unitPrice: 1200, quantity: 1, totalAmount: 1200 },
+  { invoiceId: 1002, date: 46162, productName: "Ibuprofen",   unitPrice: 800,  quantity: 3, totalAmount: 2400 },
+]
+const records = [];
+for (const row of rows) {
+  const record = {};
+  for (const csvColumn of Object.keys(mapping)) {
+    const dbField = mapping[csvColumn];
+    record[dbField] = row[csvColumn];
+  }
+  records.push(record);
+}
+console.log("First record:", records[0]);
+return res.status(200).json({ message: "mapped", count: records.length });
+
+mapping["INVOICE ID"]    // → "invoiceId"
+mapping["DATE"]          // → "date"
+mapping["PRODUCT CODE"]  // → "productCode"
+mapping["PRODUCT NAME"]  // → "productName"
+mapping["QUANTITY"]      // → "quantity"
+mapping["PRICE"]         // → "unitPrice"
+mapping["COST PRICE"]    // → "costPrice"
+mapping["TOTAL"]         // → "totalAmount"
+mapping["TOTAL COST"]    // → "totalCost"

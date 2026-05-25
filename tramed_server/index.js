@@ -53,54 +53,36 @@ function parseExpiry(ddmmyy) {
   const year = "20" + str.slice(4, 6);
   return new Date(`${year}-${month}-${day}`);
 }
-
 app.post("/api/upload", upload.single("file"), async function (req, res) {
   try {
+    if (!req.file) return res.status(400).json({ error: "No file received" });
+    console.log("file uploadeded");
+
+    // file exists — now do the work:
     const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = xlsx.utils.sheet_to_json(sheet, { cellDates: true });
+    const rows = xlsx.utils.sheet_to_json(sheet);
+    console.log("First row:", rows[0]);
 
     const headers = Object.keys(rows[0]);
-
-    let fileType;
-    if (headers.includes("INVOICE ID")) {
-      fileType = "Sales";
-    } else if (headers.includes("QTY_START")) {
-      fileType = "Stock";
-    } else {
-      return res.status(400).json({ error: "Unknown file type" });
-    }
-
+    console.log("headers:", headers);
+    const fileType = headers.includes("ID_INVOICE")
+      ? "Sales"
+      : headers.includes("QTY_START")
+        ? "Stock"
+        : null;
+    res.status(200).json({ message: "fine" });
+    console.log("fileType:", fileType);
+    if (!fileType) return res.status(400).json({ error: "Unknown file type" });
     const mapping = fileType === "Sales" ? SALES_MAPPING : STOCK_MAPPING;
-
+    const records = [];
     for (const row of rows) {
       const record = {};
       for (const csvColumn of Object.keys(mapping)) {
         const dbField = mapping[csvColumn];
-        record[dbField] = row[csvColumn];
       }
-      for (const key of Object.keys(record)) {
-        if (typeof record[key] === "string") record[key] = record[key].trim();
-      }
-      if (fileType === "Stock" && !record.productCode) continue;
-      if (fileType === "Sales" && !record.invoiceId) continue;
-      if (fileType === "Stock" && record.expirationDate) {
-        record.expirationDate = parseExpiry(record.expirationDate);
-      }
-      if (fileType === "Sales" && record.date) {
-        record.date = parseExcelDate(record.date);
-      }
-      if (fileType === "Sales") {
-        await prisma.sale.create({ data: record });
-      } else {
-        await prisma.stock.upsert({
-          where: { productCode: record.productCode },
-          update: record,
-          create: record,
-        });
-      }
+      records.push(record);
     }
-    res.json({ fileType, rowsImported: rows.length });
   } catch (err) {
     console.error("Upload error:", err.message);
     res.status(500).json({ error: err.message });
