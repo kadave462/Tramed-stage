@@ -29,7 +29,8 @@ model Sale {
   costPrice     Float?
   totalCost     Float?
 
-  @@unique([invoiceId, productCode])
+    @@unique([invoiceId, productCode, quantity, unitPrice])
+
 }
 
 model Stock {

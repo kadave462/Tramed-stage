@@ -44,6 +44,11 @@ app.get("/api/sales", async function (req, res) {
   res.json(sales);
 });
 
+app.get("/api/stock", async function (req, res) {
+  const stock = await prisma.stock.findMany();
+  res.json(stock);
+});
+
 function parseExcelDate(serial) {
   if (serial instanceof Date) return serial;
   return new Date(Math.round((serial - 25569) * 86400 * 1000));

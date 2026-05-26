@@ -117,7 +117,7 @@
       }
 
       async function deleteAll() {
-        const resultDiv = document.getElementById("result2");
+        const resultDiv = document.getElementById("result");
         const res = await fetch("/api/sales", { method: "DELETE" });
         const data = await res.json();
         if (res.ok) {

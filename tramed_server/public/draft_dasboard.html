@@ -1,0 +1,257 @@
+// only for education purposes but don't use this in production without proper security and error handling!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PHARMACIE TRAMED LTD — Daily Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --green-dark: #0d5c36;
+      --green-mid: #1a7a4a;
+      --green-light: #e8f5ee;
+      --accent: #f0a500;
+      --danger: #dc3545;
+      --muted: #6c757d;
+    }
+    body { background: #f4f6f9; font-family: 'Segoe UI', sans-serif; font-size: 14px; }
+
+    /* ── Header ── */
+    .dashboard-header {
+      background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-mid) 100%);
+      color: #fff;
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    }
+    .dashboard-header .brand { font-size: 1.35rem; font-weight: 700; letter-spacing: .5px; }
+    .dashboard-header .subtitle { font-size: .82rem; opacity: .8; margin-top: 2px; }
+    .dashboard-header .date-badge {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 8px;
+      padding: 6px 14px;
+      text-align: right;
+    }
+    .dashboard-header .date-badge .date-text { font-size: 1rem; font-weight: 600; }
+    .dashboard-header .date-badge .date-label { font-size: .75rem; opacity: .75; }
+
+    /* ── KPI Cards ── */
+    .kpi-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      border-left: 4px solid var(--green-mid);
+      height: 100%;
+    }
+    .kpi-card.profit { border-left-color: #198754; }
+    .kpi-card.cost    { border-left-color: #6c757d; }
+    .kpi-card.margin  { border-left-color: var(--accent); }
+    .kpi-card.txn     { border-left-color: #0d6efd; }
+    .kpi-card .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+    .kpi-card .value { font-size: 1.55rem; font-weight: 700; color: #212529; line-height: 1.1; }
+    .kpi-card .sub   { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Section headings ── */
+    .section-title {
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    /* ── Chart cards ── */
+    .chart-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      height: 100%;
+    }
+
+    /* ── Alert badge ── */
+    .order-now-badge {
+      display: inline-block;
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffc107;
+      border-radius: 6px;
+      padding: 3px 10px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+    .slow-mover-badge {
+      background: #f8d7da;
+      color: #842029;
+      border: 1px solid #f5c2c7;
+    }
+    .ok-badge {
+      background: #d1e7dd;
+      color: #0f5132;
+      border: 1px solid #a3cfbb;
+    }
+
+    /* ── Stock table ── */
+    .stock-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .stock-item:last-child { border-bottom: none; }
+    .stock-item .product-name { font-weight: 500; font-size: .85rem; }
+    .stock-item .supplier    { font-size: .75rem; color: var(--muted); }
+    .stock-item .qty         { font-size: .85rem; font-weight: 600; color: #dc3545; }
+
+    /* ── Transactions table ── */
+    .txn-table th { font-size: .72rem; text-transform: uppercase; letter-spacing: .4px; background: #f8f9fa; color: var(--muted); border-top: none; }
+    .txn-table td { font-size: .82rem; vertical-align: middle; }
+    .txn-table .product-cell { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pmt-cash  { background:#d1e7dd; color:#0f5132; }
+    .pmt-ins   { background:#cfe2ff; color:#084298; }
+    .badge-pmt { border-radius: 4px; padding: 2px 7px; font-size: .72rem; font-weight: 600; }
+
+    /* ── Print button ── */
+    .btn-print { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.4); color: #fff; border-radius: 8px; font-size: .82rem; padding: 6px 16px; cursor: pointer; }
+    .btn-print:hover { background: rgba(255,255,255,.3); }
+    @media print { .btn-print, .no-print { display: none !important; } }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════ HEADER ════════════════════ -->
+<div class="dashboard-header">
+  <div>
+    <div class="brand">&#9679; PHARMACIE TRAMED LTD</div>
+    <div class="subtitle">Daily Operations Dashboard</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="date-badge">
+      <div class="date-label">Report Date</div>
+      <div class="date-text" id="reportDate">—</div>
+    </div>
+    <button class="btn-print no-print" onclick="window.print()">&#128438; Print</button>
+  </div>
+</div>
+
+<!-- ════════════════════ MAIN CONTENT ════════════════════ -->
+<div class="container-fluid px-3 py-3">
+
+  <!-- KPI Row -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-4 col-xl">
+      <div class="kpi-card">
+        <div class="label">Total Revenue</div>
+        <div class="value" id="kpiRevenue">—</div>
+        <div class="sub">RWF today</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="kpi-card cost">
+        <div class="label">Total Cost</div>
+        <div class="value" id="kpiCost">—</div>
+        <div class="sub">RWF today</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="kpi-card profit">
+        <div class="label">Gross Profit</div>
+        <div class="value" id="kpiProfit">—</div>
+        <div class="sub">RWF today</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="kpi-card margin">
+        <div class="label">Profit Margin</div>
+        <div class="value" id="kpiMargin">—</div>
+        <div class="sub">% of revenue</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="kpi-card txn">
+        <div class="label">Invoices</div>
+        <div class="value" id="kpiInvoices">—</div>
+        <div class="sub" id="kpiItems">— line items</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-3 mb-3">
+    <!-- Top Products -->
+    <div class="col-12 col-lg-7">
+      <div class="chart-card">
+        <div class="section-title">Top 10 Products by Revenue (RWF)</div>
+        <canvas id="chartTopProducts" style="max-height:280px;"></canvas>
+      </div>
+    </div>
+    <!-- Hourly Sales -->
+    <div class="col-12 col-lg-5">
+      <div class="chart-card">
+        <div class="section-title">Sales by Hour</div>
+        <canvas id="chartHourly" style="max-height:280px;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment + Stock Row -->
+  <div class="row g-3 mb-3">
+    <!-- Payment Methods -->
+    <div class="col-12 col-md-4 col-lg-3">
+      <div class="chart-card">
+        <div class="section-title">Payment Methods</div>
+        <canvas id="chartPayment" style="max-height:200px;"></canvas>
+        <div id="paymentLegend" class="mt-2"></div>
+      </div>
+    </div>
+    <!-- Stock Alerts -->
+    <div class="col-12 col-md-8 col-lg-9">
+      <div class="chart-card">
+        <div class="section-title d-flex justify-content-between align-items-center">
+          <span>&#9888; Stock Alerts — Order Now</span>
+          <span id="stockSummaryBadges"></span>
+        </div>
+        <div id="stockAlerts"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions Table -->
+  <div class="row g-3">
+    <div class="col-12">
+      <div class="chart-card">
+        <div class="section-title">Today's Transaction Log (<span id="txnCount">0</span> line items)</div>
+        <div style="overflow-x:auto; max-height:380px; overflow-y:auto;">
+          <table class="table table-hover txn-table mb-0" id="txnTable">
+            <thead style="position:sticky;top:0;z-index:1;">
+              <tr>
+                <th>Invoice</th>
+                <th>Time</th>
+                <th>Product</th>
+                <th style="text-align:right;">Qty</th>
+                <th style="text-align:right;">Unit Price</th>
+                <th style="text-align:right;">Revenue</th>
+                <th style="text-align:right;">Cost</th>
+                <th style="text-align:right;">Margin</th>
+                <th>Payment</th>
+              </tr>
+            </thead>
+            <tbody id="txnBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div><!-- /container -->
+
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+:root {
+  --green-dark: #0d5c36;
+  --green-mid: #1a7a4a;
+  --green-light: #e8f5ee;
+  --accent: #f0a500;
+}
+
+body {
+  background: #f4f6f9;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+nav {
+  background: var(--green-dark);
+  color: white;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.nav-links a:hover {
+  opacity: 0.7;
+}
+.kpi-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--green-mid);
+  height: 100%;
+}
+.kpi-card.profit {
+  border-left-color: #198754;
+}
+.kpi-card.cost {
+  border-left-color: #6c757d;
+}
+.kpi-card.txn {
+  border-left-color: #0d6efd;
+}
+
+.kpi-card .label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.kpi-card .value {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #212529;
+}
+.kpi-card .sub {
+  font-size: 0.78rem;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  height: 100%;
+}
+
+.section-title {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: #6c757d;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
