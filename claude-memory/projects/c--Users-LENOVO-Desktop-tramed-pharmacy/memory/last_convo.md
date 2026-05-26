@@ -1,45 +1,110 @@
 ---
 name: last-convo
-description: Summary of last session — where we stopped, what's done, what's next in the upload route
+description: Summary of last session — where we stopped, what's done, what's next
 metadata:
   type: project
 ---
 
-## Where we stopped (2026-05-25)
+## Where we stopped (2026-05-26, evening)
 
-We are building the `/api/upload` route in `tramed_server/index.js` step by step (ETL pipeline).
+### What is done:
+- ✅ Sales upload → saves to `Sale` table (ETL complete, dates correct, duplicates prevented)
+- ✅ Stock upload → saves to `Stock` table (fixed this session)
+- ✅ GitHub pushed
+- ✅ Delete All Sales feature working
 
-### What is done in the route:
-- ✅ Guard: `if (!req.file)` → return 400
-- ✅ Parse file: `xlsx.read` → `sheet_to_json` → `rows`
-- ✅ Detect file type: check headers for `"INVOICE ID"` (Sales) or `"QTY_START"` (Stock)
-- ✅ Pick mapping: `const mapping = fileType === "Sales" ? SALES_MAPPING : STOCK_MAPPING`
-- ✅ Outer loop started: `for (const row of rows)` with `const record = {}`
-- ✅ Inner loop started: `for (const csvColumn of Object.keys(mapping))`
-- ❌ `record[dbField] = row[csvColumn]` line is MISSING inside inner loop — user was learning this concept
+### What stock upload fix required (done today):
+1. `record.date = parseExpiry(row["DATE"])` was running for both Sales and Stock — wrapped in if/else
+2. `prisma.sale.createMany` was always called — replaced with if/else routing
+3. `STOCK_MAPPING` keys use underscores (`EXPIRATION_DATE`, `PURCHASE_PRICE`) — user renamed Excel columns to match
 
-### What is NOT done yet:
-- Phase 3: Clean data (parse dates with `parseExcelDate`, skip empty rows with `continue`)
-- Phase 4: Save to database (`prisma.sale.create` or `prisma.stock.upsert`)
-- Phase 5: Respond with `{ fileType, rowsImported }`
+### Current index.js state (key section):
+```js
+for (const row of rows) {
+  const record = {};
+  for (const csvColumn of Object.keys(mapping)) {
+    const dbField = mapping[csvColumn];
+    record[dbField] = row[csvColumn];
+  }
+  if (fileType === "Sales") {
+    record.date = parseExpiry(row["DATE"]);
+  } else {
+    record.expirationDate = parseExpiry(row["EXPIRATION_DATE"]);
+  }
+  records.push(record);
+}
+if (fileType === "Sales") {
+  await prisma.sale.createMany({ data: records, skipDuplicates: true });
+} else {
+  await prisma.stock.createMany({ data: records, skipDuplicates: true });
+}
+```
 
-### Current index.js issues to fix next session:
-1. Line 69: `headers.includes("ID_INVOICE")` → should be `"INVOICE ID"`
-2. Line 74: `res.status(200).json({ message: "fine" })` → should be removed (sends response too early)
-3. Line 83: `record[dbField] = row[csvColumn]` is missing inside the inner loop
-4. `console.log("First row:", rows[0])` on line 65 — can remove after testing
+### STOCK_MAPPING (current, uses underscores):
+```js
+const STOCK_MAPPING = {
+  CODE: "productCode",
+  DESIGNATION: "productName",
+  SUPPLIER: "supplier",
+  BATCH: "batchNumber",
+  EXPIRATION_DATE: "expirationDate",
+  QTY_START: "qtyStart",
+  QTY_LIVE: "qtyLive",
+  PURCHASE_PRICE: "purchasePrice",
+};
+```
 
-### nodemon installed
-- Installed as dev dependency
-- Script added: `"dev": "nodemon index.js"` in package.json
-- Run with: `npm run dev` from inside `tramed_server/`
+---
 
-### education/notes.html
-- Created at `tramed pharmacy/education/notes.html`
-- Note 1: xlsx.read explanation
-- Note 2: `{ type: "buffer" }` explanation
-- More notes to be added as user learns
+## What is NOT done yet (next session, in order):
 
-**Why:** User wants to continue from another computer — this gives full context on where to pick up.
+### Step 1 — Add `/api/stock` route to `index.js`
+Add this after the existing `/api/sales` GET route:
+```js
+app.get("/api/stock", async function (req, res) {
+  const stock = await prisma.stock.findMany();
+  res.json(stock);
+});
+```
 
-**How to apply:** At start of next session, read this memory and tell the user exactly what to fix and what step to do next.
+### Step 2 — Connect dashboard (`public/index.html`) to real API data
+Replace the entire `<script>` section (currently 350 lines of hardcoded CSV + parsing logic).
+
+New script must be `async` and fetch both endpoints in parallel:
+```js
+const [rows, stockRows] = await Promise.all([
+  fetch('/api/sales').then(r => r.json()),
+  fetch('/api/stock').then(r => r.json()),
+]);
+```
+
+Field name changes (CSV column → API field):
+- `r['INVOICE ID']` → `r.invoiceId`
+- `r['PRODUCT NAME']` → `r.productName`
+- `r['TOTAL']` → `r.totalAmount`
+- `r['TOTAL COST']` → calculate as `r.costPrice * r.quantity` (not stored in DB)
+- `r['QUANTITY']` → `r.quantity`
+- `r['PRICE']` → `r.unitPrice`
+- `r['DATE']` → `r.date` (ISO string from DB, wrap in `new Date(r.date)`)
+- `r['CUSTOMER NAME']` → `r.paymentMethod` (will be null — skip payment chart)
+
+Date handling fixes:
+- Hourly chart: `new Date(r.date).getHours()` (not string split)
+- Transaction time: `new Date(r.date).toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'})`
+- Report date: `fmtDate(new Date(rows[0].date))`
+
+Payment methods chart: show placeholder — paymentMethod not stored.
+
+Stock alerts: filter `stockRows` where `qtyLive <= 10`, show `productName`, `supplier`, `qtyLive`.
+
+### Step 3 — Write one API test
+For France job applications — at least one test for upload or sales endpoint.
+
+### Step 4 — MVC refactor
+Split `index.js` into `routes/`, `controllers/`, `repositories/` after all features work.
+
+---
+
+**Why:** User works on another computer at the pharmacy tomorrow.
+
+**How to apply:** At start of next session, read this memory and tell the user to start with Step 1 (add `/api/stock` route), then Step 2 (replace dashboard script).

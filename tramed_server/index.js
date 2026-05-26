@@ -25,10 +25,10 @@ const STOCK_MAPPING = {
   DESIGNATION: "productName",
   SUPPLIER: "supplier",
   BATCH: "batchNumber",
-  "EXPIRATION DATE": "expirationDate",
+  EXPIRATION_DATE: "expirationDate",
   QTY_START: "qtyStart",
   QTY_LIVE: "qtyLive",
-  "PURCHASE PRICE": "purchasePrice",
+  PURCHASE_PRICE: "purchasePrice",
 };
 
 const { PrismaClient } = require("@prisma/client");
@@ -84,11 +84,18 @@ app.post("/api/upload", upload.single("file"), async function (req, res) {
         const dbField = mapping[csvColumn];
         record[dbField] = row[csvColumn];
       }
-      record.date = parseExpiry(row["DATE"]);
+      if (fileType === "Sales") {
+        record.date = parseExpiry(row["DATE"]);
+      } else {
+        record.expirationDate = parseExpiry(row["EXPIRATION_DATE"]);
+      }
       records.push(record);
-      console.log(records);
     }
-    await prisma.sale.createMany({ data: records, skipDuplicates: true });
+    if (fileType === "Sales") {
+      await prisma.sale.createMany({ data: records, skipDuplicates: true });
+    } else {
+      await prisma.stock.createMany({ data: records, skipDuplicates: true });
+    }
     res.json({ fileType, rowsImported: records.length });
   } catch (err) {
     console.error("Upload error:", err.message);
