@@ -81,7 +81,10 @@
       </div>
 
       <div>
-        <button onclick="deleteAll()">Delete All Sales</button>
+        <button onclick="deleteAllsales()">Delete All Sales</button>
+      </div>
+      <div>
+        <button onclick="deleteAllStock()">Delete All Stock</button>
       </div>
     </div>
     <script>
@@ -116,13 +119,25 @@
         }
       }
 
-      async function deleteAll() {
+      async function deleteAllsales() {
         const resultDiv = document.getElementById("result");
         const res = await fetch("/api/sales", { method: "DELETE" });
         const data = await res.json();
         if (res.ok) {
           resultDiv.innerHTML = `<div class="alert alert-success">✓ deleted: <strong>${data.message}</strong> </div>`;
           console.log("de;eted");
+        } else {
+          resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+        }
+        console.log(data.message);
+      }
+
+      async function deleteAllStock() {
+        const resultDiv = document.getElementById("result");
+        const res = await fetch("/api/stock", { method: "DELETE" });
+        const data = await res.json();
+        if (res.ok) {
+          resultDiv.innerHTML = `<div class="alert alert-success">✓ ${data.message}</div>`;
         } else {
           resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
         }

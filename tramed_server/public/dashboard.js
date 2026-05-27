@@ -4,6 +4,7 @@ async function loadDashboard() {
 
   console.log("sales loaded:", sales.length);
   console.log("stock loaded:", stock.length);
+  console.log("First stock row:", stock[0]);
 
   //   the most recent date in the data
   const latestDate = sales
@@ -42,6 +43,7 @@ async function loadDashboard() {
   document.getElementById("kpiInvoices").textContent = invoiceIds.size;
   document.getElementById("kpiItems").textContent =
     todaySales.length + " line items";
+  document.getElementById("txnCount").textContent = todaySales.length;
 
   console.log("Total Revenue:", totalRevenue);
   console.log("Total Cost:", totalCost);
@@ -54,14 +56,38 @@ async function loadDashboard() {
         <td>${sale.date.slice(0, 10)}</td>
         <td>${sale.productName}</td>
         <td>${sale.quantity}</td>
-        <td>${Math.round(sale.unitPrice).toLocaleString("fr-RW")}</td>
-        <td>${Math.round(sale.totalAmount).toLocaleString("fr-RW")}</td>
-        <td>${Math.round((sale.costPrice ?? 0) * (sale.quantity ?? 0)).toLocaleString("fr-RW")}</td>
-        <td>${Math.round(sale.totalAmount - (sale.costPrice ?? 0) * (sale.quantity ?? 0)).toLocaleString("fr-RW")}</td>
+        <td>${Math.round(sale.unitPrice).toLocaleString("fr-RW")} RWF</td>
+        <td>${Math.round(sale.totalAmount).toLocaleString("fr-RW")} RWF</td>
+        <td>${Math.round((sale.costPrice ?? 0) * (sale.quantity ?? 0)).toLocaleString("fr-RW")} RWF</td>
+        <td>${Math.round(sale.totalAmount - (sale.costPrice ?? 0) * (sale.quantity ?? 0)).toLocaleString("fr-RW")} RWF</td>
       </tr>
     `;
     tbody.innerHTML += row;
   });
+
+  //stock alerts
+
+  const alertContainer = document.getElementById("stockAlerts");
+  const lowStock = stock
+    .filter((item) => (item.qtyLive ?? 0) < 10)
+    .sort((a, b) => a.qtyLive - b.qtyLive);
+
+  if (lowStock.length === 0) {
+    alertContainer.innerHTML =
+      "<p style='color:#198754;'>All stock levels OK</p>";
+  } else {
+    for (const item of lowStock) {
+      alertContainer.innerHTML += `
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;">
+          <div>
+            <div style="font-weight:500;">${item.productName}</div>
+            <div style="font-size:.75rem;color:#6c757d;">${item.supplier}</div>
+          </div>
+          <div style="color:#dc3545;font-weight:600;">${item.qtyLive} left</div>
+        </div>
+      `;
+    }
+  }
 }
 
 loadDashboard();

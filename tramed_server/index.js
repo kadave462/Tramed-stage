@@ -25,10 +25,10 @@ const STOCK_MAPPING = {
   DESIGNATION: "productName",
   SUPPLIER: "supplier",
   BATCH: "batchNumber",
-  EXPIRATION_DATE: "expirationDate",
+  "EXPIRATION DATE": "expirationDate",
   QTY_START: "qtyStart",
   QTY_LIVE: "qtyLive",
-  PURCHASE_PRICE: "purchasePrice",
+  "PURCHASE PRICE": "purchasePrice",
 };
 
 const { PrismaClient } = require("@prisma/client");
@@ -55,12 +55,15 @@ function parseExcelDate(serial) {
 }
 
 function parseExpiry(ddmmyy) {
-  const str = String(ddmmyy).padStart(6, "0");
+  if (!ddmmyy) return null;
+  const str = String(ddmmyy).replace(/\//g, "").padStart(6, "0");
   const day = str.slice(0, 2);
   const month = str.slice(2, 4);
   const year = "20" + str.slice(4, 6);
-  return new Date(`${year}-${month}-${day}`);
+  const date = new Date(`${year}-${month}-${day}`);
+  return isNaN(date) ? null : date;
 }
+
 app.post("/api/upload", upload.single("file"), async function (req, res) {
   try {
     if (!req.file) return res.status(400).json({ error: "No file received" });
@@ -89,11 +92,16 @@ app.post("/api/upload", upload.single("file"), async function (req, res) {
         const dbField = mapping[csvColumn];
         record[dbField] = row[csvColumn];
       }
+
       if (fileType === "Sales") {
         record.date = parseExpiry(row["DATE"]);
       } else {
-        record.expirationDate = parseExpiry(row["EXPIRATION_DATE"]);
+        record.expirationDate = parseExpiry(row["EXPIRATION DATE"]);
       }
+      for (const key of Object.keys(record)) {
+        if (record[key] === undefined) record[key] = null;
+      }
+      if (!record.productCode) continue;
       records.push(record);
     }
     if (fileType === "Sales") {
@@ -112,6 +120,17 @@ app.delete("/api/sales", async function (req, res) {
   try {
     await prisma.sale.deleteMany();
     res.json({ message: "All sales deleted" });
+    console.log("deleted");
+  } catch (err) {
+    console.error("Delete error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/stock", async function (req, res) {
+  try {
+    await prisma.stock.deleteMany();
+    res.json({ message: "All stock deleted" });
     console.log("deleted");
   } catch (err) {
     console.error("Delete error:", err.message);
