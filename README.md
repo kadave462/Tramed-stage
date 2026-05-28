@@ -17,12 +17,13 @@ Built for **PHARMACIE TRAMED LTD** using real sales and stock data exported from
 ## Tech Stack
 
 | Layer        | Technology                    |
-| ------------ | ----------------------------- | -------------- |
+| ------------ | ----------------------------- |
 | Runtime      | Node.js                       |
 | Framework    | Express                       |
 | ORM          | Prisma                        |
 | Database     | PostgreSQL                    |
-| Frontend     | Vanilla JavaScript, HTML, CSS | later to React |
+| Frontend     | Vanilla JavaScript, HTML, CSS |
+|              |                later to React |   
 | File Parsing | xlsx (SheetJS)                |
 | File Upload  | Multer                        |
 
