@@ -23,8 +23,6 @@ Built for **PHARMACIE TRAMED LTD** using real sales and stock data exported from
 | ORM          | Prisma                        |
 | Database     | PostgreSQL                    |
 | Frontend     | Vanilla JavaScript, HTML, CSS | later to React |
-| Charts       | Chart.js 4                    |
-| UI           | Bootstrap 5                   |
 | File Parsing | xlsx (SheetJS)                |
 | File Upload  | Multer                        |
 
