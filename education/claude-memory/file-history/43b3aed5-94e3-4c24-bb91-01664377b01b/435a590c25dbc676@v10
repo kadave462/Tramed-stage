@@ -1,0 +1,73 @@
+const express = require("express");
+const app = express();
+
+const multer = require("multer");
+const xlsx = require("xlsx");
+
+const upload = multer({ storage: multer.memoryStorage() });
+const SALES_MAPPING = {
+  "INVOICE ID": "invoiceId",
+  DATE: "date",
+  "PRODUCT CODE": "productCode",
+  "PRODUCT NAME": "productName",
+  QUANTITY: "quantity",
+  PRICE: "unitPrice",
+  "COST PRICE": "costPrice",
+  TOTAL: "totalAmount",
+  "TOTAL COST": "totalCost",
+};
+
+const STOCK_MAPPING = {
+  CODE: "productCode",
+  DESIGNATION: "productName",
+  SUPPLIER: "supplier",
+  BATCH: "batchNumber",
+  "EXPIRATION DATE": "expirationDate",
+  QTY_START: "qtyStart",
+  QTY_LIVE: "qtyLive",
+  "PURCHASE PRICE": "purchasePrice",
+};
+
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+app.use(express.json());
+app.use(express.static("public"));
+
+app.get("/api/sales", async function (req, res) {
+  const sales = await prisma.sale.findMany();
+  console.log("Someone visited  http://localhost:3000/api/sales");
+
+  res.json(sales);
+});
+
+app.post("/api/upload", upload.single("file"), async function (req, res) {
+  const workbook = xlsx.read(req.file.buffer);
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows = xlsx.utils.sheet_to_json(sheet);
+
+  const headers = Object.keys(rows[0]);
+
+  let fileType;
+  if (headers.includes("INVOICE ID")) {
+    fileType = "Sales";
+  } else if (headers.includes("QTY_START")) {
+    fileType = "Stock";
+  } else {
+    return res.status(400).json({ error: "Unknown file type" });
+  }
+
+  const mapping = fileType === "Sales" ? SALES_MAPPING : STOCK_MAPPING;
+
+  for (const row of rows) {
+    const record = {};
+    for (const csvColumn of Object.keys(mapping)) {
+      const dbField = mapping[csvColumn];
+      record[dbField] = row[csvColumn];
+    }
+  }
+});
+
+app.listen(3000, function () {
+  console.log("Server started on http://localhost:3000");
+});

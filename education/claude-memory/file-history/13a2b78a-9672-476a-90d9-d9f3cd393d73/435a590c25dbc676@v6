@@ -1,0 +1,30 @@
+const express = require("express");
+const app = express();
+
+const multer = require("multer");
+const xlsx = require("xlsx");
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+app.use(express.json());
+app.use(express.static("public"));
+
+app.get("/api/sales", async function (req, res) {
+  const sales = await prisma.sale.findMany();
+  console.log("Someone visited  http://localhost:3000/api/sales");
+
+  res.json(sales);
+});
+
+app.post("/api/upload", upload.single("file"), async function (req, res) {
+  const workbook = xlsx.read(req.file.buffer);
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows = xlsx.utils.sheet_to_json(sheet);
+});
+
+app.listen(3000, function () {
+  console.log("Server started on http://localhost:3000");
+});

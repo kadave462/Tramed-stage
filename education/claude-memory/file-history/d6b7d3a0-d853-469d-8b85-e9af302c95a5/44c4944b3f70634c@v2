@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Calibri, Arial, sans-serif; margin: 60px; color: #222; font-size: 13pt; line-height: 1.6; }
+    h1 { color: #0d5c36; font-size: 22pt; border-bottom: 3px solid #0d5c36; padding-bottom: 8px; }
+    h2 { color: #0d5c36; font-size: 16pt; margin-top: 30px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+    h3 { color: #1a7a4a; font-size: 13pt; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 12pt; }
+    th { background-color: #0d5c36; color: white; padding: 10px 12px; text-align: left; }
+    td { padding: 9px 12px; border-bottom: 1px solid #ddd; }
+    tr:nth-child(even) { background-color: #f4f9f6; }
+    .phase-box { background: #e8f5ee; border-left: 4px solid #0d5c36; padding: 12px 16px; margin: 10px 0; border-radius: 4px; }
+    .note { background: #fff8e1; border-left: 4px solid #f0a500; padding: 12px 16px; margin: 16px 0; border-radius: 4px; font-style: italic; }
+    .subtitle { color: #555; font-size: 13pt; margin-top: -10px; margin-bottom: 20px; }
+    ul { margin: 8px 0; padding-left: 22px; }
+    li { margin-bottom: 5px; }
+  </style>
+</head>
+<body>
+
+<h1>PHARMACIE TRAMED LTD</h1>
+<p class="subtitle">Software Development Life Cycle (SDLC) — Project Planning Document<br>
+Prepared by: Kabera Muhire David &nbsp;|&nbsp; Date: 22 May 2026</p>
+
+<div class="note">
+  This document defines the full Software Development Life Cycle for the Tramed digital transformation project. It serves as the planning foundation before any code is written.
+</div>
+
+<h2>1. What is the SDLC?</h2>
+<p>The Software Development Life Cycle (SDLC) is the process every professional software project follows. It ensures we build the right thing, in the right order, without wasting time. Every phase must be completed before moving to the next.</p>
+
+<table>
+  <thead>
+    <tr><th>Phase</th><th>Name</th><th>What happens</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Planning</td><td>Define the goal, scope, and timeline</td><td>Done</td></tr>
+    <tr><td>2</td><td>Requirements</td><td>What exactly does the system need to do?</td><td>Done</td></tr>
+    <tr><td>3</td><td>Design</td><td>Wireframes, architecture, data model</td><td>In Progress</td></tr>
+    <tr><td>4</td><td>Development</td><td>Writing the actual code</td><td>Not Started</td></tr>
+    <tr><td>5</td><td>Testing</td><td>Does it work correctly?</td><td>Not Started</td></tr>
+    <tr><td>6</td><td>Deployment</td><td>Put it on a real server for users</td><td>Not Started</td></tr>
+    <tr><td>7</td><td>Maintenance</td><td>Fix bugs, add features over time</td><td>Not Started</td></tr>
+  </tbody>
+</table>
+
+<h2>2. Phase 1 — Planning</h2>
+<p>The goal, business context, and supervision structure for the project.</p>
+
+<table>
+  <thead><tr><th>Item</th><th>Detail</th></tr></thead>
+  <tbody>
+    <tr><td>Business Name</td><td>Pharmacie Tramed</td></tr>
+    <tr><td>Address</td><td>KN 151 St, Kigali, Rwanda</td></tr>
+    <tr><td>Current System</td><td>Ishyiga POS — installed, partially utilized</td></tr>
+    <tr><td>Technical Supervisor</td><td>Systems Architect Engineer — Kigali, Rwanda</td></tr>
+    <tr><td>Strategic Advisor</td><td>Business Consultant — California, USA</td></tr>
+    <tr><td>Project Goal</td><td>Build an intelligence layer on top of Ishyiga — turning raw data into predictions, automations, and insights</td></tr>
+    <tr><td>Bigger Vision</td><td>Package the solution as a replicable product for other pharmacies in Rwanda</td></tr>
+  </tbody>
+</table>
+
+<h2>3. Phase 2 — Requirements</h2>
+<p>Requirements define exactly what the system must do. They are divided into Functional (what it does) and Non-Functional (how it performs).</p>
+
+<h3>3.1 Functional Requirements</h3>
+<table>
+  <thead><tr><th>#</th><th>Requirement</th><th>Priority</th><th>Phase</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>Daily sales dashboard — revenue, margins, trends, alerts</td><td>Must Have</td><td>Phase 1</td></tr>
+    <tr><td>2</td><td>Data pipeline — import and process Ishyiga CSV exports</td><td>Must Have</td><td>Phase 1</td></tr>
+    <tr><td>3</td><td>Stock alerts — flag products low on stock</td><td>Must Have</td><td>Phase 1</td></tr>
+    <tr><td>4</td><td>Demand forecasting — predict what to reorder and when</td><td>Should Have</td><td>Phase 2</td></tr>
+    <tr><td>5</td><td>Stock anomaly detection — flag unusual discrepancies</td><td>Should Have</td><td>Phase 2</td></tr>
+    <tr><td>6</td><td>Supplier auto-reorder messages</td><td>Should Have</td><td>Phase 2</td></tr>
+    <tr><td>7</td><td>Chronic medication reminders via WhatsApp</td><td>Could Have</td><td>Phase 3</td></tr>
+    <tr><td>8</td><td>Customer loyalty tracker</td><td>Could Have</td><td>Phase 3</td></tr>
+    <tr><td>9</td><td>AI sales trend analysis — seasonal and event patterns</td><td>Future</td><td>Phase 4</td></tr>
+    <tr><td>10</td><td>Customer segmentation by purchase behaviour</td><td>Future</td><td>Phase 4</td></tr>
+    <tr><td>11</td><td>Profit margin optimization recommendations</td><td>Future</td><td>Phase 4</td></tr>
+    <tr><td>12</td><td>Predictive restocking — forecast quantities per supplier</td><td>Future</td><td>Phase 4</td></tr>
+  </tbody>
+</table>
+
+<h3>3.2 Non-Functional Requirements</h3>
+<ul>
+  <li>Works in any browser — no installation required for pharmacy staff</li>
+  <li>Builds on top of Ishyiga — does not replace it</li>
+  <li>Must be replicable for other pharmacies with minimal changes</li>
+  <li>Data must be secure — staff login required</li>
+  <li>Must work on the devices already available at the pharmacy</li>
+</ul>
+
+<h2>4. Phase 3 — Design</h2>
+<p>The design phase defines what we build before writing any code. It includes the tech stack, page map, and data model.</p>
+
+<h3>4.1 Confirmed Technology Stack</h3>
+<table>
+  <thead><tr><th>Layer</th><th>Technology</th><th>Role</th></tr></thead>
+  <tbody>
+    <tr><td>Frontend</td><td>HTML + CSS + Bootstrap + JavaScript</td><td>What staff see and click</td></tr>
+    <tr><td>Backend</td><td>Node.js + Express.js</td><td>The brain — handles all logic and requests</td></tr>
+    <tr><td>ORM</td><td>Prisma</td><td>Translates JavaScript into database queries</td></tr>
+    <tr><td>Database</td><td>PostgreSQL</td><td>Stores all data permanently</td></tr>
+    <tr><td>AI Integration</td><td>Claude API (Anthropic)</td><td>Reports, alerts, smart search</td></tr>
+    <tr><td>Version Control</td><td>Git + GitHub</td><td>Tracks every code change</td></tr>
+  </tbody>
+</table>
+
+<h3>4.2 Application Architecture</h3>
+<p>The application follows a three-tier architecture. The frontend never talks directly to the database — everything goes through the backend.</p>
+<table>
+  <thead><tr><th>Layer</th><th>Pharmacy Equivalent</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td>PostgreSQL</td><td>The Stock Room</td><td>All data lives here permanently</td></tr>
+    <tr><td>Node.js + Express + Prisma</td><td>The Pharmacist</td><td>Fetches data, applies logic, returns results</td></tr>
+    <tr><td>HTML / CSS / JavaScript</td><td>The Counter</td><td>What staff see — dashboards, forms, buttons</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3 Pages to Build (MVP)</h3>
+<table>
+  <thead><tr><th>Page</th><th>URL</th><th>What it shows</th></tr></thead>
+  <tbody>
+    <tr><td>Dashboard</td><td>/dashboard</td><td>Daily KPIs, charts, stock alerts, transaction log</td></tr>
+    <tr><td>Sales</td><td>/sales</td><td>Full sales history, search and filter by date</td></tr>
+    <tr><td>Stock</td><td>/stock</td><td>Current stock levels, low stock alerts, reorder list</td></tr>
+    <tr><td>Upload</td><td>/upload</td><td>Upload new Ishyiga CSV export to update data</td></tr>
+    <tr><td>Login</td><td>/login</td><td>Staff authentication — username and password</td></tr>
+  </tbody>
+</table>
+
+<h3>4.4 Data Model (What gets stored in the database)</h3>
+<table>
+  <thead><tr><th>Table</th><th>What it stores</th><th>Key fields</th></tr></thead>
+  <tbody>
+    <tr><td>sales</td><td>Every sales transaction from Ishyiga</td><td>invoice_id, product_name, quantity, price, total, date, payment_method</td></tr>
+    <tr><td>products</td><td>Product catalogue</td><td>product_code, product_name, category, supplier</td></tr>
+    <tr><td>stock</td><td>Current stock levels per product</td><td>product_id, quantity, reorder_level, last_updated</td></tr>
+    <tr><td>users</td><td>Staff login accounts</td><td>name, email, password_hash, role</td></tr>
+  </tbody>
+</table>
+
+<h2>5. Internship Phases</h2>
+<div class="phase-box">
+  <strong>Phase 1 — Audit &amp; Discovery:</strong> Technical discovery audit of Ishyiga usage, operations, stock, and customer flows. Produce written diagnosis report and priority list.
+</div>
+<div class="phase-box">
+  <strong>Phase 2 — Implementation:</strong> Build no-code solutions independently. Develop software and AI components under technical supervision. Show progress every 2 weeks via video demo.
+</div>
+<div class="phase-box">
+  <strong>Phase 3 — Results &amp; Packaging:</strong> Measure what improved. Write final case study. Package solution as replicable product for other pharmacies. Receive formal internship documentation.
+</div>
+
+<h2>6. What We Build First (MVP)</h2>
+<p>The Minimum Viable Product (MVP) is the smallest version of the app that delivers real value. Based on the requirements, the MVP covers Requirements 1, 2, and 3:</p>
+<ul>
+  <li>A working web server (Node.js + Express)</li>
+  <li>A database that stores Ishyiga sales data (PostgreSQL + Prisma)</li>
+  <li>A dashboard that reads from the database and displays KPIs, charts, and stock alerts</li>
+  <li>A CSV upload page so new Ishyiga exports can be loaded</li>
+  <li>Staff login so only authorized users can access the system</li>
+</ul>
+
+<div class="note">
+  This document is a living reference. It will be updated as each phase is completed and as the technical supervisor provides direction.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Date Range Picker — Study Notes</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; color: #212529; max-width: 900px; margin: 0 auto; padding: 32px 20px; font-size: 15px; }
+    h1 { color: #0d5c36; border-bottom: 3px solid #0d5c36; padding-bottom: 10px; }
+    h2 { color: #1a7a4a; margin-top: 48px; border-left: 4px solid #1a7a4a; padding-left: 12px; }
+    .step { background: #fff; border-left: 4px solid #1a7a4a; border-radius: 8px; padding: 18px 22px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+    .step-number { display: inline-block; background: #0d5c36; color: #fff; border-radius: 50%; width: 28px; height: 28px; line-height: 28px; text-align: center; font-weight: 700; margin-right: 10px; font-size: 13px; }
+    .step-title { font-size: 1.05rem; font-weight: 700; }
+    .why { background: #e8f5ee; border: 1px solid #a3cfbb; border-radius: 6px; padding: 10px 14px; margin-top: 12px; font-size: 0.88rem; }
+    .why strong { color: #0d5c36; }
+    .warn { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 10px 14px; margin-top: 12px; font-size: 0.88rem; }
+    .warn strong { color: #664d03; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.88rem; font-family: 'Courier New', monospace; }
+    pre { background: #1e1e1e; color: #d4d4d4; padding: 16px 20px; border-radius: 8px; overflow-x: auto; font-size: 0.84rem; line-height: 1.6; margin-top: 10px; }
+    .tag { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 0.78rem; font-weight: 600; margin-right: 4px; vertical-align: middle; }
+    .tag.html { background: #cfe2ff; color: #084298; }
+    .tag.css  { background: #e0cffc; color: #5a0080; }
+    .tag.js   { background: #fff3cd; color: #664d03; }
+    .tag.new  { background: #d1e7dd; color: #0a3622; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.85rem; }
+    th { background: #0d5c36; color: #fff; padding: 8px 12px; text-align: left; }
+    td { padding: 8px 12px; border-bottom: 1px solid #e0e0e0; }
+    tr:nth-child(even) td { background: #f8f9fa; }
+    .file-list { background: #fff; border-radius: 8px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.07); margin-bottom: 24px; }
+    .file-list li { margin-bottom: 6px; }
+    .concept-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; font-size: 0.88rem; }
+    .concept-box strong { display: block; margin-bottom: 4px; color: #0d5c36; }
+  </style>
+</head>
+<body>
+
+<h1>How to Build a Date Range Picker — From Scratch</h1>
+<p>A Date Range Picker is the dropdown that lets you select "Today", "Last 7 Days", or a custom start/end date. This guide covers every step: what the component is called, which file each piece goes in, and why.</p>
+
+<!-- ═══ OVERVIEW ═══ -->
+<h2>What Are We Building?</h2>
+
+<p>A button in the navigation bar. When you click it, a dropdown appears with:</p>
+<ul>
+  <li>6 preset buttons — Today, Yesterday, Last 7 Days, Last 30 Days, This Month, Last Month</li>
+  <li>2 date inputs for a custom range — From / To</li>
+  <li>An Apply button for the custom range</li>
+</ul>
+<p>When the user picks a range, the page reloads with the dates in the URL (e.g. <code>?from=2026-05-01&amp;to=2026-05-28</code>). The dashboard reads those dates and filters the sales data.</p>
+
+<h2>Files Involved</h2>
+
+<div class="file-list">
+  <ul>
+    <li><strong>index.html</strong> — add the picker button and dropdown HTML inside the &lt;nav&gt;</li>
+    <li><strong>style.css</strong> — add styles for the button, dropdown, and preset buttons</li>
+    <li><strong>datepicker.js</strong> &nbsp;<span style="background:#d1e7dd;color:#0a3622;font-weight:600;padding:2px 7px;border-radius:4px;font-size:.8rem;">NEW FILE</span> — all the logic: open/close, date math, write to URL</li>
+    <li><strong>dashboard.js</strong> — small change: read the URL params and filter sales by date range</li>
+  </ul>
+</div>
+
+<h2>Key Concepts You Will Use</h2>
+
+<div class="concept-box">
+  <strong>position: relative / absolute</strong>
+  The dropdown floats on top of the page. The wrapper gets <code>position: relative</code> (it becomes the reference point). The dropdown gets <code>position: absolute</code> and positions itself relative to that wrapper.
+</div>
+
+<div class="concept-box">
+  <strong>classList.toggle("open")</strong>
+  The dropdown starts hidden. When the button is clicked, JavaScript adds the class <code>open</code> to the wrapper. CSS sees <code>.dp-wrapper.open .dp-dropdown</code> and shows it. Click again — class removed, dropdown hides again.
+</div>
+
+<div class="concept-box">
+  <strong>Date math in JavaScript</strong>
+  <code>new Date()</code> gives today. <code>d.setDate(d.getDate() - 6)</code> moves the date 6 days backward. This is how "Last 7 Days" is calculated.
+</div>
+
+<div class="concept-box">
+  <strong>URLSearchParams + window.location.href</strong>
+  <code>URLSearchParams</code> builds a query string like <code>?from=2026-05-01&amp;to=2026-05-28</code>. Setting <code>window.location.href</code> to a new URL reloads the page with those parameters.
+</div>
+
+<div class="concept-box">
+  <strong>window.location.search</strong>
+  On page load, this holds the current query string. <code>new URLSearchParams(window.location.search).get("from")</code> extracts the value of the <code>from</code> parameter.
+</div>
+
+
+<!-- ═══ PART 1: HTML ═══ -->
+<h2>Part 1 — HTML &nbsp;<span class="tag html">index.html</span></h2>
+
+<div class="step">
+  <span class="step-number">1</span>
+  <span class="step-title">Clean up the existing nav — delete the old inputs</span>
+  <span class="tag html">HTML</span>
+  <p>Open <strong>index.html</strong>. The nav currently ends with two date inputs. Delete those three lines:</p>
+  <pre>&lt;!-- DELETE these three lines --&gt;
+&lt;input type="date" id="dateFrom" class="date-picker" /&gt;
+&lt;span style="color: white"&gt;→&lt;/span&gt;
+&lt;input type="date" id="dateTo" class="date-picker" /&gt;</pre>
+  <div class="why"><strong>Why delete them?</strong> They were a simple placeholder. The new picker replaces them with a proper dropdown component that has presets, custom range, and label.</div>
+</div>
+
+<div class="step">
+  <span class="step-number">2</span>
+  <span class="step-title">Add the picker wrapper + button + dropdown</span>
+  <span class="tag html">HTML</span>
+  <p>In their place (still inside &lt;nav&gt;, after the closing &lt;/div&gt; of .nav-links), add this block:</p>
+  <pre>&lt;div class="dp-wrapper" id="dpWrapper"&gt;
+
+  &lt;!-- The button the user clicks to open the dropdown --&gt;
+  &lt;button class="dp-btn" id="dpBtn"&gt;
+    &lt;span id="dpLabel"&gt;Today&lt;/span&gt; &#9660;
+  &lt;/button&gt;
+
+  &lt;!-- The dropdown panel (hidden by default via CSS) --&gt;
+  &lt;div class="dp-dropdown" id="dpDropdown"&gt;
+
+    &lt;!-- Preset buttons --&gt;
+    &lt;div class="dp-presets"&gt;
+      &lt;button class="dp-preset" data-preset="today"&gt;Today&lt;/button&gt;
+      &lt;button class="dp-preset" data-preset="yesterday"&gt;Yesterday&lt;/button&gt;
+      &lt;button class="dp-preset" data-preset="last7"&gt;Last 7 Days&lt;/button&gt;
+      &lt;button class="dp-preset" data-preset="last30"&gt;Last 30 Days&lt;/button&gt;
+      &lt;button class="dp-preset" data-preset="thismonth"&gt;This Month&lt;/button&gt;
+      &lt;button class="dp-preset" data-preset="lastmonth"&gt;Last Month&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Custom range section --&gt;
+    &lt;div class="dp-custom"&gt;
+      &lt;div class="dp-custom-row"&gt;
+        &lt;label&gt;From&lt;/label&gt;
+        &lt;input type="date" id="dpFrom" /&gt;
+      &lt;/div&gt;
+      &lt;div class="dp-custom-row"&gt;
+        &lt;label&gt;To&lt;/label&gt;
+        &lt;input type="date" id="dpTo" /&gt;
+      &lt;/div&gt;
+      &lt;button id="dpApply"&gt;Apply&lt;/button&gt;
+    &lt;/div&gt;
+
+  &lt;/div&gt;
+&lt;/div&gt;</pre>
+  <div class="why">
+    <strong>dp-wrapper</strong> — the outer container. Gets <code>position: relative</code> in CSS so the dropdown positions itself relative to it.<br><br>
+    <strong>dp-btn</strong> — the visible button in the nav. Shows the current label ("Today", "Last 7 Days", etc.) inside a &lt;span id="dpLabel"&gt;.<br><br>
+    <strong>dp-dropdown</strong> — the floating panel. Hidden by default via <code>display: none</code> in CSS.<br><br>
+    <strong>data-preset="today"</strong> — a custom HTML attribute on each preset button. JavaScript reads this to know which preset was clicked. All 6 buttons use the same class <code>dp-preset</code> so JavaScript can loop through them all at once.<br><br>
+    <strong>&#9660;</strong> — HTML code for the ▼ arrow symbol that visually signals the button opens a dropdown.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">3</span>
+  <span class="step-title">Link datepicker.js to the page</span>
+  <span class="tag html">HTML</span>
+  <p>At the bottom of index.html, just before &lt;/body&gt;, add a second script tag after dashboard.js:</p>
+  <pre>&lt;script src="dashboard.js"&gt;&lt;/script&gt;
+&lt;script src="datepicker.js"&gt;&lt;/script&gt;   &lt;!-- ADD THIS --&gt;
+&lt;/body&gt;</pre>
+  <div class="why"><strong>Why at the bottom?</strong> The script runs when the page loads. If it ran at the top, the elements it needs (dpWrapper, dpBtn, etc.) would not exist yet — getElementById would return null. At the bottom, all elements already exist in the page.</div>
+</div>
+
+
+<!-- ═══ PART 2: CSS ═══ -->
+<h2>Part 2 — CSS &nbsp;<span class="tag css">style.css</span></h2>
+<p>Add all of the following to the <strong>bottom</strong> of style.css.</p>
+
+<div class="step">
+  <span class="step-number">4</span>
+  <span class="step-title">Wrapper — the reference point for the dropdown</span>
+  <span class="tag css">CSS</span>
+  <pre>.dp-wrapper {
+  position: relative;
+}</pre>
+  <div class="why"><strong>position: relative</strong> makes this div the "anchor". Anything with <code>position: absolute</code> inside it will position itself relative to this box — not relative to the whole page.</div>
+</div>
+
+<div class="step">
+  <span class="step-number">5</span>
+  <span class="step-title">The button in the nav bar</span>
+  <span class="tag css">CSS</span>
+  <pre>.dp-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+.dp-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}</pre>
+  <div class="why">
+    <strong>rgba(255, 255, 255, 0.15)</strong> — white at 15% opacity. Gives a frosted-glass look against the dark green nav bar.<br><br>
+    <strong>white-space: nowrap</strong> — prevents the label text from wrapping to a second line when it is long (e.g. "2026-05-01 → 2026-05-28").
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">6</span>
+  <span class="step-title">The dropdown panel — hidden by default</span>
+  <span class="tag css">CSS</span>
+  <pre>.dp-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  min-width: 230px;
+  z-index: 100;
+}</pre>
+  <div class="why">
+    <strong>display: none</strong> — completely hidden until JavaScript adds the <code>open</code> class.<br><br>
+    <strong>position: absolute</strong> — lifts the dropdown out of normal page flow. It floats on top of whatever is below it.<br><br>
+    <strong>top: calc(100% + 8px)</strong> — places the panel 8px below the bottom of the wrapper. 100% = the height of the wrapper div itself.<br><br>
+    <strong>right: 0</strong> — the right edge of the dropdown aligns with the right edge of the wrapper.<br><br>
+    <strong>z-index: 100</strong> — forces the dropdown to appear above the charts, table, and other page content.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">7</span>
+  <span class="step-title">Show the dropdown when .open class is present</span>
+  <span class="tag css">CSS</span>
+  <pre>.dp-wrapper.open .dp-dropdown {
+  display: block;
+}</pre>
+  <div class="why">
+    <strong>How this selector works:</strong> It means — find a <code>.dp-dropdown</code> that is a child of a <code>.dp-wrapper</code> that also has the class <code>open</code>.<br><br>
+    JavaScript's only job is to add or remove the class <code>open</code> on the wrapper. CSS reacts automatically. This pattern — JS controls state, CSS controls appearance — is the standard way to build interactive components.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">8</span>
+  <span class="step-title">Preset buttons — styled as a menu list</span>
+  <span class="tag css">CSS</span>
+  <pre>.dp-presets {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dp-preset {
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: #212529;
+  width: 100%;
+}
+.dp-preset:hover {
+  background: #e8f5ee;
+  color: #0d5c36;
+  font-weight: 600;
+}</pre>
+  <div class="why">
+    <strong>background: none; border: none</strong> — removes the default browser button look so each option looks like a plain menu item, not a raised button.<br><br>
+    <strong>text-align: left; width: 100%</strong> — stretches each option to fill the full width of the dropdown, with text on the left — standard menu behavior.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">9</span>
+  <span class="step-title">Custom range section at the bottom of the dropdown</span>
+  <span class="tag css">CSS</span>
+  <pre>.dp-custom {
+  border-top: 1px solid #e0e0e0;
+  margin-top: 10px;
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dp-custom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.83rem;
+}
+.dp-custom-row input[type="date"] {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.83rem;
+}
+#dpApply {
+  background: #0d5c36;
+  color: white;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.83rem;
+  align-self: flex-end;
+}
+#dpApply:hover {
+  background: #1a7a4a;
+}</pre>
+  <div class="why">
+    <strong>border-top</strong> — a visual divider line separating the preset buttons from the custom range inputs.<br><br>
+    <strong>align-self: flex-end</strong> — the Apply button sits on the right side of the column rather than stretching full width.
+  </div>
+</div>
+
+
+<!-- ═══ PART 3: datepicker.js ═══ -->
+<h2>Part 3 — datepicker.js &nbsp;<span class="tag new">NEW FILE</span></h2>
+<p>Create a new file: <code>tramed_server/public/datepicker.js</code> — same folder as dashboard.js.</p>
+
+<div class="step">
+  <span class="step-number">10</span>
+  <span class="step-title">Get the three elements we need</span>
+  <span class="tag js">JS</span>
+  <pre>const dpWrapper = document.getElementById("dpWrapper");
+const dpBtn     = document.getElementById("dpBtn");
+const dpLabel   = document.getElementById("dpLabel");</pre>
+  <div class="why">
+    We store these three elements in variables so we can reuse them without calling <code>getElementById</code> repeatedly.<br><br>
+    <strong>dpWrapper</strong> — we add/remove the <code>open</code> class on this to show/hide the dropdown.<br>
+    <strong>dpBtn</strong> — we attach the click listener to this.<br>
+    <strong>dpLabel</strong> — we change its text to show what is currently selected ("Today", "Last 7 Days", etc.).
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">11</span>
+  <span class="step-title">Open and close the dropdown</span>
+  <span class="tag js">JS</span>
+  <pre>// Click the button → toggle the dropdown open or closed
+dpBtn.addEventListener("click", function (e) {
+  e.stopPropagation();
+  dpWrapper.classList.toggle("open");
+});
+
+// Click anywhere outside the picker → close it
+document.addEventListener("click", function (e) {
+  if (!dpWrapper.contains(e.target)) {
+    dpWrapper.classList.remove("open");
+  }
+});</pre>
+  <div class="why">
+    <strong>classList.toggle("open")</strong> — if the class <code>open</code> is present, it removes it. If absent, it adds it. One line handles both directions.<br><br>
+    <strong>e.stopPropagation()</strong> — when you click the button, the click normally also fires on the document. That would immediately trigger the "close" listener. stopPropagation stops the event from reaching the document when the button is clicked.<br><br>
+    <strong>dpWrapper.contains(e.target)</strong> — checks whether the element you clicked is inside the wrapper. If you click on the page outside (the table, a chart), contains returns false and we close the dropdown.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">12</span>
+  <span class="step-title">Two helper functions</span>
+  <span class="tag js">JS</span>
+  <pre>// Convert a Date object to "YYYY-MM-DD" string
+function toISO(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+// Apply a range: update label, close dropdown, reload page with URL params
+function applyRange(from, to, labelText) {
+  dpLabel.textContent = labelText;
+  dpWrapper.classList.remove("open");
+  const params = new URLSearchParams(window.location.search);
+  params.set("from", from);
+  params.set("to", to);
+  window.location.href = "?" + params.toString();
+}</pre>
+  <div class="why">
+    <strong>toISO(date)</strong> — <code>toISOString()</code> gives "2026-05-28T00:00:00.000Z". <code>.slice(0, 10)</code> takes only the first 10 characters: "2026-05-28". This YYYY-MM-DD format is what dashboard.js uses for filtering.<br><br>
+    <strong>applyRange(from, to, labelText)</strong> — called by every preset and by the custom Apply button. It does 4 things in order:<br>
+    1. Updates the button label text<br>
+    2. Closes the dropdown<br>
+    3. Reads whatever is already in the URL, adds/updates <code>from</code> and <code>to</code><br>
+    4. Navigates to the new URL — the page reloads with the dates in the address bar<br><br>
+    <strong>params.toString()</strong> — turns the URLSearchParams object into a string like <code>from=2026-05-01&amp;to=2026-05-28</code>. The <code>"?" +</code> in front adds the question mark.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">13</span>
+  <span class="step-title">Preset buttons — one loop for all six</span>
+  <span class="tag js">JS</span>
+  <pre>document.querySelectorAll(".dp-preset").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    const preset = btn.dataset.preset;   // reads data-preset="today" etc.
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);   // reset to midnight — clean date math
+
+    if (preset === "today") {
+      applyRange(toISO(today), toISO(today), "Today");
+
+    } else if (preset === "yesterday") {
+      const d = new Date(today);   // copy today first
+      d.setDate(d.getDate() - 1);
+      applyRange(toISO(d), toISO(d), "Yesterday");
+
+    } else if (preset === "last7") {
+      const from = new Date(today);
+      from.setDate(from.getDate() - 6);
+      applyRange(toISO(from), toISO(today), "Last 7 Days");
+
+    } else if (preset === "last30") {
+      const from = new Date(today);
+      from.setDate(from.getDate() - 29);
+      applyRange(toISO(from), toISO(today), "Last 30 Days");
+
+    } else if (preset === "thismonth") {
+      const from = new Date(today.getFullYear(), today.getMonth(), 1);
+      const to   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      applyRange(toISO(from), toISO(to), "This Month");
+
+    } else if (preset === "lastmonth") {
+      const from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const to   = new Date(today.getFullYear(), today.getMonth(), 0);
+      applyRange(toISO(from), toISO(to), "Last Month");
+    }
+  });
+});</pre>
+  <div class="why">
+    <strong>querySelectorAll(".dp-preset")</strong> — returns all 6 preset buttons as a list.<br>
+    <strong>.forEach(...)</strong> — runs the function once per button, attaching a click listener to each one. One loop instead of 6 separate addEventListener calls.<br><br>
+    <strong>btn.dataset.preset</strong> — reads the <code>data-preset="yesterday"</code> HTML attribute. JavaScript can read any <code>data-*</code> attribute via <code>.dataset.attributeName</code>.<br><br>
+    <strong>new Date(today)</strong> — creates a COPY of today. You must copy before calling <code>setDate</code>, otherwise you modify the original <code>today</code> variable and the next preset that uses it gets the wrong date.<br><br>
+    <strong>setDate(getDate() - 6)</strong> — moves the date 6 days back. Today + 6 previous days = 7 total days.<br><br>
+    <strong>new Date(year, month, 1)</strong> — first day of a month. Month numbers are 0-indexed: January = 0, December = 11.<br>
+    <strong>new Date(year, month, 0)</strong> — day 0 of any month = the last day of the previous month. <code>new Date(2026, 5, 0)</code> = May 31. This gives you the last day without hard-coding 28/29/30/31.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">14</span>
+  <span class="step-title">Custom range — Apply button</span>
+  <span class="tag js">JS</span>
+  <pre>document.getElementById("dpApply").addEventListener("click", function () {
+  const from = document.getElementById("dpFrom").value;
+  const to   = document.getElementById("dpTo").value;
+
+  if (!from || !to) {
+    alert("Please select both a From and a To date.");
+    return;
+  }
+  if (from > to) {
+    alert("The From date cannot be after the To date.");
+    return;
+  }
+
+  const label = from === to ? from : from + " → " + to;
+  applyRange(from, to, label);
+});</pre>
+  <div class="why">
+    <strong>.value on a date input</strong> — the browser always gives the value as "YYYY-MM-DD". No conversion needed — it is already in the same format as <code>toISO()</code>.<br><br>
+    <strong>if (!from || !to)</strong> — an empty date input has the value <code>""</code>, which is falsy. <code>!</code> turns falsy into true. So this line reads: "if from is empty OR to is empty".<br><br>
+    <strong>from &gt; to</strong> — string comparison works on ISO dates because Year comes first, then Month, then Day. "2026-05-28" is greater than "2026-05-01".<br><br>
+    <strong>from === to ? from : from + " → " + to</strong> — if both dates are the same day, just show the date. If they are different, show "2026-05-01 → 2026-05-07". The <code>?</code> is a ternary operator: <code>condition ? value-if-true : value-if-false</code>.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">15</span>
+  <span class="step-title">On page load — restore the label from the URL</span>
+  <span class="tag js">JS</span>
+  <pre>// After the page reloads, restore the label to show what range is selected
+const currentParams = new URLSearchParams(window.location.search);
+const currentFrom   = currentParams.get("from");
+const currentTo     = currentParams.get("to");
+
+if (currentFrom && currentTo) {
+  dpLabel.textContent = currentFrom === currentTo
+    ? currentFrom
+    : currentFrom + " → " + currentTo;
+}</pre>
+  <div class="why">
+    After the page reloads with <code>?from=2026-05-01&amp;to=2026-05-07</code> in the URL, the button label would reset to "Today". This code runs immediately when the script loads and restores the label to match what is in the URL.<br><br>
+    <strong>window.location.search</strong> — the part of the URL after the <code>?</code>. If the URL is <code>index.html?from=2026-05-01&amp;to=2026-05-07</code> this gives <code>?from=2026-05-01&amp;to=2026-05-07</code>.<br><br>
+    <strong>params.get("from")</strong> — returns the value of the <code>from</code> key as a string, or <code>null</code> if it does not exist in the URL.
+  </div>
+</div>
+
+<div class="step">
+  <span class="step-number">16</span>
+  <span class="step-title">Complete datepicker.js — full file</span>
+  <span class="tag js">JS</span>
+  <span class="tag new">SAVE AS: tramed_server/public/datepicker.js</span>
+  <pre>const dpWrapper = document.getElementById("dpWrapper");
+const dpBtn     = document.getElementById("dpBtn");
+const dpLabel   = document.getElementById("dpLabel");
+
+dpBtn.addEventListener("click", function (e) {
+  e.stopPropagation();
+  dpWrapper.classList.toggle("open");
+});
+
+document.addEventListener("click", function (e) {
+  if (!dpWrapper.contains(e.target)) {
+    dpWrapper.classList.remove("open");
+  }
+});
+
+function toISO(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function applyRange(from, to, labelText) {
+  dpLabel.textContent = labelText;
+  dpWrapper.classList.remove("open");
+  const params = new URLSearchParams(window.location.search);
+  params.set("from", from);
+  params.set("to", to);
+  window.location.href = "?" + params.toString();
+}
+
+document.querySelectorAll(".dp-preset").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    const preset = btn.dataset.preset;
+    const today  = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (preset === "today") {
+      applyRange(toISO(today), toISO(today), "Today");
+    } else if (preset === "yesterday") {
+      const d = new Date(today);
+      d.setDate(d.getDate() - 1);
+      applyRange(toISO(d), toISO(d), "Yesterday");
+    } else if (preset === "last7") {
+      const from = new Date(today);
+      from.setDate(from.getDate() - 6);
+      applyRange(toISO(from), toISO(today), "Last 7 Days");
+    } else if (preset === "last30") {
+      const from = new Date(today);
+      from.setDate(from.getDate() - 29);
+      applyRange(toISO(from), toISO(today), "Last 30 Days");
+    } else if (preset === "thismonth") {
+      const from = new Date(today.getFullYear(), today.getMonth(), 1);
+      const to   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      applyRange(toISO(from), toISO(to), "This Month");
+    } else if (preset === "lastmonth") {
+      const from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const to   = new Date(today.getFullYear(), today.getMonth(), 0);
+      applyRange(toISO(from), toISO(to), "Last Month");
+    }
+  });
+});
+
+document.getElementById("dpApply").addEventListener("click", function () {
+  const from = document.getElementById("dpFrom").value;
+  const to   = document.getElementById("dpTo").value;
+  if (!from || !to) { alert("Please select both a From and a To date."); return; }
+  if (from > to)    { alert("The From date cannot be after the To date."); return; }
+  const label = from === to ? from : from + " → " + to;
+  applyRange(from, to, label);
+});
+
+const currentParams = new URLSearchParams(window.location.search);
+const currentFrom   = currentParams.get("from");
+const currentTo     = currentParams.get("to");
+if (currentFrom && currentTo) {
+  dpLabel.textContent = currentFrom === currentTo
+    ? currentFrom
+    : currentFrom + " → " + currentTo;
+}</pre>
+</div>
+
+
+<!-- ═══ PART 4: dashboard.js ═══ -->
+<h2>Part 4 — dashboard.js &nbsp;<span class="tag js">small change</span></h2>
+
+<div class="step">
+  <span class="step-number">17</span>
+  <span class="step-title">Read URL params and filter sales by date range</span>
+  <span class="tag js">JS</span>
+  <p>In dashboard.js, find the block that calculates <code>latestDate</code> and <code>todaySales</code>. Replace it with this:</p>
+  <pre>// Read date range from URL — e.g. ?from=2026-05-01&to=2026-05-07
+const urlParams  = new URLSearchParams(window.location.search);
+const filterFrom = urlParams.get("from");
+const filterTo   = urlParams.get("to");
+
+// Fall back to the most recent date in the data if no URL params exist
+const latestDate = sales
+  .map((s) => s.date.slice(0, 10))
+  .sort()
+  .at(-1);
+
+const todaySales = sales.filter(function (sale) {
+  const d = sale.date.slice(0, 10);
+  if (filterFrom && filterTo) {
+    return d >= filterFrom && d <= filterTo;
+  }
+  return d === latestDate;
+});</pre>
+  <div class="why">
+    <strong>filterFrom / filterTo</strong> — will be strings like "2026-05-01" if the user selected a range, or <code>null</code> if they opened the page directly with no URL params.<br><br>
+    <strong>d &gt;= filterFrom &amp;&amp; d &lt;= filterTo</strong> — ISO date string comparison. "2026-05-15" &gt;= "2026-05-01" is true. No need to create Date objects just to compare dates in this format.<br><br>
+    <strong>Fallback to latestDate</strong> — if no URL params exist (first page visit, no picker used), the dashboard defaults to the most recent date in the data. The picker does not break existing behavior.
+  </div>
+</div>
+
+
+<!-- ═══ BUILD ORDER ═══ -->
+<h2>Build Order — Do Steps in This Order</h2>
+
+<table>
+  <tr><th>#</th><th>What to do</th><th>File</th></tr>
+  <tr><td>1</td><td>Delete old date inputs from nav</td><td>index.html</td></tr>
+  <tr><td>2</td><td>Add picker wrapper HTML (button + dropdown)</td><td>index.html</td></tr>
+  <tr><td>3</td><td>Add &lt;script src="datepicker.js"&gt; tag</td><td>index.html</td></tr>
+  <tr><td>4</td><td>Add .dp-wrapper CSS</td><td>style.css</td></tr>
+  <tr><td>5</td><td>Add .dp-btn CSS</td><td>style.css</td></tr>
+  <tr><td>6</td><td>Add .dp-dropdown CSS (hidden by default)</td><td>style.css</td></tr>
+  <tr><td>7</td><td>Add .dp-wrapper.open .dp-dropdown rule</td><td>style.css</td></tr>
+  <tr><td>8</td><td>Add .dp-preset and .dp-custom CSS</td><td>style.css</td></tr>
+  <tr><td>9</td><td>Create datepicker.js — steps 10 and 11 only (get elements + toggle open)</td><td>datepicker.js (new)</td></tr>
+  <tr><td>10</td><td><strong>TEST:</strong> click the button in the browser — dropdown should open and close</td><td>browser</td></tr>
+  <tr><td>11</td><td>Add helper functions (toISO + applyRange)</td><td>datepicker.js</td></tr>
+  <tr><td>12</td><td>Add preset loop</td><td>datepicker.js</td></tr>
+  <tr><td>13</td><td><strong>TEST:</strong> click "Last 7 Days" — check the URL changes in the address bar</td><td>browser</td></tr>
+  <tr><td>14</td><td>Add custom range Apply button</td><td>datepicker.js</td></tr>
+  <tr><td>15</td><td>Add label restore on page load</td><td>datepicker.js</td></tr>
+  <tr><td>16</td><td>Update dashboard.js to filter by URL params</td><td>dashboard.js</td></tr>
+  <tr><td>17</td><td><strong>TEST end to end:</strong> pick "Last 30 Days" — KPI cards and table should update</td><td>browser</td></tr>
+</table>
+
+<div class="warn" style="margin-top: 20px;">
+  <strong>If the dropdown does not open after step 10, check these things first:</strong><br>
+  1. Is <code>&lt;script src="datepicker.js"&gt;&lt;/script&gt;</code> in index.html?<br>
+  2. Do the <code>id</code> values in HTML exactly match the strings in <code>getElementById</code>? One typo = null.<br>
+  3. Is the <code>.dp-wrapper.open .dp-dropdown { display: block; }</code> rule in style.css?<br>
+  Open DevTools (F12) → Console tab — any red error tells you exactly what is wrong.
+</div>
+
+
+<!-- ═══ CONCEPTS REFERENCE ═══ -->
+<h2>All Concepts Used — Quick Reference</h2>
+
+<table>
+  <tr><th>Concept</th><th>What it does</th><th>Where used</th></tr>
+  <tr><td><code>position: relative</code></td><td>Makes element an anchor for absolutely-positioned children</td><td>.dp-wrapper</td></tr>
+  <tr><td><code>position: absolute</code></td><td>Floats element relative to nearest positioned parent</td><td>.dp-dropdown</td></tr>
+  <tr><td><code>top: calc(100% + 8px)</code></td><td>Positions 8px below the bottom of the parent</td><td>.dp-dropdown</td></tr>
+  <tr><td><code>z-index: 100</code></td><td>Forces element above other page content</td><td>.dp-dropdown</td></tr>
+  <tr><td><code>display: none / block</code></td><td>Hides or shows element completely</td><td>dropdown show/hide</td></tr>
+  <tr><td><code>classList.toggle("open")</code></td><td>Adds class if absent, removes if present</td><td>button click</td></tr>
+  <tr><td><code>e.stopPropagation()</code></td><td>Stops click from bubbling up to parent elements</td><td>button click</td></tr>
+  <tr><td><code>element.contains(target)</code></td><td>True if target is inside element</td><td>outside-click detection</td></tr>
+  <tr><td><code>querySelectorAll + forEach</code></td><td>Selects all matching elements and loops through them</td><td>preset buttons loop</td></tr>
+  <tr><td><code>btn.dataset.preset</code></td><td>Reads the <code>data-preset="..."</code> HTML attribute</td><td>preset loop</td></tr>
+  <tr><td><code>new Date()</code></td><td>Creates a Date object for right now</td><td>all presets</td></tr>
+  <tr><td><code>setHours(0,0,0,0)</code></td><td>Resets time to midnight for clean date math</td><td>all presets</td></tr>
+  <tr><td><code>new Date(d)</code></td><td>Copies a Date — must copy before modifying</td><td>yesterday / last7 / last30</td></tr>
+  <tr><td><code>setDate(getDate() - N)</code></td><td>Moves date N days backward</td><td>yesterday / last7 / last30</td></tr>
+  <tr><td><code>new Date(y, m, 1)</code></td><td>First day of a month (month = 0-indexed)</td><td>thismonth / lastmonth</td></tr>
+  <tr><td><code>new Date(y, m, 0)</code></td><td>Last day of previous month (day 0 trick)</td><td>thismonth / lastmonth</td></tr>
+  <tr><td><code>toISOString().slice(0,10)</code></td><td>Converts Date to "YYYY-MM-DD" string</td><td>toISO() helper</td></tr>
+  <tr><td><code>new URLSearchParams(search)</code></td><td>Reads or builds URL query parameters</td><td>applyRange + page load</td></tr>
+  <tr><td><code>params.set("from", value)</code></td><td>Adds or updates a key in URLSearchParams</td><td>applyRange</td></tr>
+  <tr><td><code>params.toString()</code></td><td>Turns params into a string: "from=...&amp;to=..."</td><td>applyRange</td></tr>
+  <tr><td><code>window.location.href = ...</code></td><td>Navigates to a new URL (triggers page reload)</td><td>applyRange</td></tr>
+  <tr><td><code>window.location.search</code></td><td>The ?from=...&amp;to=... part of the current URL</td><td>page load restore + dashboard.js</td></tr>
+  <tr><td><code>params.get("from")</code></td><td>Returns value of a URL param, or null if absent</td><td>page load restore + dashboard.js</td></tr>
+  <tr><td><code>d &gt;= from &amp;&amp; d &lt;= to</code></td><td>Date range check — works on ISO strings directly</td><td>dashboard.js filter</td></tr>
+  <tr><td><code>condition ? a : b</code></td><td>Ternary — shorthand if/else that returns a value</td><td>label text in Apply + restore</td></tr>
+</table>
+
+</body>
+</html>
