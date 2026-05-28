@@ -34,24 +34,6 @@ This is a full-stack web application that imports raw pharmacy sales and stock d
 The dashboard allows filtering by date range and shows revenue, cost, gross profit, top products, top clients, and stock alerts in real time.
 
 ---
-
-## 2. Tech Stack Used
-
-| Layer        | Technology                           |
-| ------------ | ------------------------------------ |
-| Runtime      | Node.js                              |
-| Framework    | Express                              |
-| ORM          | Prisma                               |
-| Database     | PostgreSQL                           |
-| Frontend     | Vanilla JavaScript, HTML, CSS        |
-| Charts       | Chart.js 4                           |
-| UI           | Bootstrap 5                          |
-| Date Picker  | daterangepicker + moment.js + jQuery |
-| File Parsing | xlsx (SheetJS)                       |
-| File Upload  | Multer                               |
-
----
-
 ## 3. How to Run the Project
 
 ```bash
