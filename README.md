@@ -91,7 +91,7 @@ A single-table-per-entity approach was chosen because the source data comes as f
 | --------------- | -------- | -------------------------------------------------- |
 | id              | Int      | Auto-increment primary key                         |
 | invoiceId       | String   | Invoice number                                     |
-| date            | DateTime | Date and time of sale                              |
+| date            | Date | Date  of sale                                          |
 | productCode     | String   | Product identifier                                 |
 | productName     | String   | Product name                                       |
 | quantity        | Int      | Quantity sold                                      |
@@ -101,7 +101,7 @@ A single-table-per-entity approach was chosen because the source data comes as f
 | clientFirstName | String   | Client first name                                  |
 | clientLastName  | String   | Client last name                                   |
 | employe         | String   | Employee who made the sale                         |
-| societe         | String   | Company name if applicable                         |
+| societe         | String   | insurance compnay name if applicable                |
 
 ### Stock table — one row per product in inventory
 
@@ -112,7 +112,7 @@ A single-table-per-entity approach was chosen because the source data comes as f
 | productName    | String          | Product name                      |
 | supplier       | String          | Supplier name                     |
 | batchNumber    | String          | Batch number                      |
-| expirationDate | DateTime        | Product expiration date           |
+| expirationDate | Date            | Product expiration date           |
 | qtyStart       | Int             | Stock quantity at start of period |
 | qtyLive        | Int             | Current stock level               |
 | purchasePrice  | Float           | Purchase price per unit           |
@@ -167,25 +167,9 @@ The following queries were **not implemented**:
 
 ---
 
-## 6. Data Analysis Findings
-
-The dashboard shows the following patterns visually:
-
-- A small number of products generate the majority of revenue. The top 10 products account for most of total sales.
-- A small number of clients are responsible for most of the pharmacy income.
-- Several products have critically low stock levels while appearing frequently in recent sales, indicating stockout risk.
-
-**What was not done:**
-
-- No written analysis of high-quantity/low-profit products
-- No written analysis of low-quantity/high-margin products
-- No category-level revenue breakdown because there is no category data in the source
-
----
-
 ## 7. Reorder Recommendation Logic
 
-The Stock Alerts section flags every product with fewer than 10 units as a reorder candidate, sorted by lowest stock first.
+The Stock Alerts section flags every product with fewer than 10 units as a reorder candidate, but needs to be improved with more sofisticated formulas
 
 **What was not implemented:**
 
