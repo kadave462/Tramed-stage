@@ -11,7 +11,9 @@ A full-stack pharmacy management web app built for **PHARMACIE TRAMED LTD**.
 - **Transaction Table** — full list of today's sales with margin per line item
 - **Date Picker** — filter all dashboard data by any date in the dataset
 - **Data Upload** — import sales or stock from Excel (.xlsx) — file type detected automatically
+- **Data** —  sales data and stock data (xls and csv) via the upload page later we will ask for the api. (as promissed)
 - **Delete Routes** — clear sales or stock data via the upload page
+
 
 ## Tech Stack
 
@@ -21,7 +23,7 @@ A full-stack pharmacy management web app built for **PHARMACIE TRAMED LTD**.
 | Framework | Express |
 | ORM | Prisma |
 | Database | PostgreSQL |
-| Frontend | Vanilla JavaScript, HTML, CSS |
+| Frontend | Vanilla JavaScript, HTML, CSS | later to React
 | Charts | Chart.js 4 |
 | UI | Bootstrap 5 |
 | File Parsing | xlsx (SheetJS) |
