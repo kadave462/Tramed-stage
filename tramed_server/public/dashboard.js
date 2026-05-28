@@ -1,31 +1,51 @@
+let chartTopProductsInstance = null;
+let chartTopClientsInstance = null;
+
 async function loadDashboard() {
   const sales = await (await fetch("/api/sales")).json();
   const stock = await (await fetch("/api/stock")).json();
 
-  console.log("sales loaded:", sales.length);
-  console.log("stock loaded:", stock.length);
-  console.log("First stock row:", stock[0]);
+  const dates = sales.map((s) => s.date.slice(0, 10)).sort();
+  const earliestDate = dates.at(0);
+  const latestDate = dates.at(-1);
 
-  //   the most recent date in the data
-  const latestDate = sales
-    .map((sale) => sale.date.slice(0, 10))
-    .sort()
-    .at(-1);
-
-  console.log("Latest date:", latestDate);
-
-  // keep only sales from that date
-  const todaySales = sales.filter((sale) => {
-    return sale.date.slice(0, 10) === latestDate;
+  $("#datePicker").daterangepicker({
+    startDate: moment(earliestDate),
+    endDate: moment(latestDate),
+    ranges: {
+      Today: [moment(), moment()],
+      Yesterday: [moment().subtract(1, "days"), moment().subtract(1, "days")],
+      "Last 7 Days": [moment().subtract(6, "days"), moment()],
+      "Last 30 Days": [moment().subtract(29, "days"), moment()],
+      "This Month": [moment().startOf("month"), moment().endOf("month")],
+      "Last Month": [
+        moment().subtract(1, "month").startOf("month"),
+        moment().subtract(1, "month").endOf("month"),
+      ],
+    },
+    locale: { format: "MMM D, YYYY" },
   });
 
-  console.log("Sales on latest date:", todaySales.length);
+  renderForRange(sales, stock, earliestDate, latestDate);
 
-  // add up totals
+  document.getElementById("searchBtn").addEventListener("click", () => {
+    const picker = $("#datePicker").data("daterangepicker");
+    const start = picker.startDate.format("YYYY-MM-DD");
+    const end = picker.endDate.format("YYYY-MM-DD");
+    renderForRange(sales, stock, start, end);
+  });
+}
+
+function renderForRange(sales, stock, startDate, endDate) {
+  const filtered = sales.filter((s) => {
+    const d = s.date.slice(0, 10);
+    return d >= startDate && d <= endDate;
+  });
+
   let totalRevenue = 0;
   let totalCost = 0;
 
-  todaySales.forEach((sale) => {
+  filtered.forEach((sale) => {
     totalRevenue += sale.totalAmount ?? 0;
     totalCost += (sale.costPrice ?? 0) * (sale.quantity ?? 0);
   });
@@ -38,19 +58,19 @@ async function loadDashboard() {
     totalRevenue - totalCost,
   ).toLocaleString("fr-RW");
 
-  // for invoices, we want to count unique invoice IDs, not line items
-  const invoiceIds = new Set(todaySales.map((sale) => sale.invoiceId));
+  const invoiceIds = new Set(filtered.map((sale) => sale.invoiceId));
   document.getElementById("kpiInvoices").textContent = invoiceIds.size;
   document.getElementById("kpiItems").textContent =
-    todaySales.length + " line items";
-  document.getElementById("txnCount").textContent = todaySales.length;
-
-  console.log("Total Revenue:", totalRevenue);
-  console.log("Total Cost:", totalCost);
+    filtered.length + " line items";
+  document.getElementById("txnCount").textContent = filtered.length;
 
   const tbody = document.getElementById("txnBody");
-  todaySales.forEach((sale) => {
-    const row = `
+  let rows = "";
+  filtered
+    .sort((a, b) => b.totalAmount - a.totalAmount)
+    .slice(0, 100)
+    .forEach((sale) => {
+      rows += `
       <tr>
         <td>${sale.invoiceId}</td>
         <td>${sale.date.slice(0, 10)}</td>
@@ -62,12 +82,11 @@ async function loadDashboard() {
         <td>${Math.round(sale.totalAmount - (sale.costPrice ?? 0) * (sale.quantity ?? 0)).toLocaleString("fr-RW")} RWF</td>
       </tr>
     `;
-    tbody.innerHTML += row;
-  });
-
-  //stock alerts
+    });
+  tbody.innerHTML = rows;
 
   const alertContainer = document.getElementById("stockAlerts");
+  alertContainer.innerHTML = "";
   const lowStock = stock
     .filter((item) => (item.qtyLive ?? 0) < 10)
     .sort((a, b) => a.qtyLive - b.qtyLive);
@@ -89,57 +108,42 @@ async function loadDashboard() {
     }
   }
 
-  // ── Top Products chart ──────────────────────────────────
+  if (chartTopProductsInstance) chartTopProductsInstance.destroy();
+  if (chartTopClientsInstance) chartTopClientsInstance.destroy();
 
   const revenueByProduct = {};
-  for (const sale of todaySales) {
-    const name = sale.productName;
-    revenueByProduct[name] = (revenueByProduct[name] || 0) + sale.totalAmount;
+  for (const sale of filtered) {
+    revenueByProduct[sale.productName] =
+      (revenueByProduct[sale.productName] || 0) + sale.totalAmount;
   }
   const sorted = Object.entries(revenueByProduct)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
 
-  new Chart(document.getElementById("chartTopProducts"), {
-    type: "bar",
-    data: {
-      labels: sorted.map((x) => x[0]),
-      datasets: [
-        {
-          label: "Revenue (RWF)",
-          data: sorted.map((x) => x[1]),
-          backgroundColor: "#1a7a4a",
-        },
-      ],
-    },
-    options: {
-      indexAxis: "y",
-      plugins: { legend: { display: true } },
-      scales: {
-        x: { beginAtZero: true },
+  chartTopProductsInstance = new Chart(
+    document.getElementById("chartTopProducts"),
+    {
+      type: "bar",
+      data: {
+        labels: sorted.map((x) => x[0]),
+        datasets: [
+          {
+            label: "Revenue (RWF)",
+            data: sorted.map((x) => x[1]),
+            backgroundColor: "#1a7a4a",
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y",
+        plugins: { legend: { display: true } },
+        scales: { x: { beginAtZero: true } },
       },
     },
-  });
+  );
 
-  // ── clients chart ──────────────────────────────────
-  const byHour = Array(24).fill(0);
-  for (const sale of todaySales) {
-    byHour[new Date(sale.date).getHours()] += sale.totalAmount ?? 0;
-  }
-  new Chart(document.getElementById("chartHourly"), {
-    type: "bar",
-    data: {
-      labels: byHour.map((_, i) => i + "h"),
-      datasets: [
-        { label: "Revenue", data: byHour, backgroundColor: "#f0a500" },
-      ],
-    },
-    options: { plugins: { legend: { display: false } } },
-  });
-
-  // ── Top Clients chart ──────────────────────────────────
   const revenueByClient = {};
-  for (const sale of todaySales) {
+  for (const sale of filtered) {
     const name = (
       (sale.clientFirstName ?? "") +
       " " +
@@ -153,20 +157,26 @@ async function loadDashboard() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
 
-  new Chart(document.getElementById("chartTopClients"), {
-    type: "bar",
-    data: {
-      labels: topClients.map((x) => x[0]),
-      datasets: [
-        {
-          label: "Revenue (RWF)",
-          data: topClients.map((x) => x[1]),
-          backgroundColor: "#f0a500",
-        },
-      ],
+  chartTopClientsInstance = new Chart(
+    document.getElementById("chartTopClients"),
+    {
+      type: "bar",
+      data: {
+        labels: topClients.map((x) => x[0]),
+        datasets: [
+          {
+            label: "Revenue (RWF)",
+            data: topClients.map((x) => x[1]),
+            backgroundColor: "#f0a500",
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y",
+        plugins: { legend: { display: false } },
+      },
     },
-    options: { indexAxis: "y", plugins: { legend: { display: false } } },
-  });
+  );
 }
 
 loadDashboard();

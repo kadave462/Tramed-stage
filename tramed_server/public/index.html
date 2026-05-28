@@ -9,6 +9,14 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -22,13 +30,27 @@
       </div>
     </nav>
     <div class="container-fluid px-3 py-3">
+      <!-- date range picker -->
+      <div class="row mb-3 justify-content-end">
+        <div class="col-auto d-flex align-items-center gap-2">
+          <input
+            type="text"
+            id="datePicker"
+            class="form-control form-control-sm"
+            style="width: 260px"
+            readonly
+          />
+          <button id="searchBtn" class="btn btn-primary btn-sm">Search</button>
+        </div>
+      </div>
+
       <!-- kpi rows -->
       <div class="row g-3 mb-3">
         <div class="col-6 col-md-4 col-xl">
           <div class="kpi-card">
             <div class="label">Total Revenue</div>
             <div class="value" id="kpiRevenue">—</div>
-            <div class="sub">RWF today</div>
+            <div class="sub">RWF</div>
           </div>
         </div>
 
@@ -36,7 +58,7 @@
           <div class="kpi-card cost">
             <div class="label">Total Cost</div>
             <div class="value" id="kpiCost">—</div>
-            <div class="sub">RWF today</div>
+            <div class="sub">RWF</div>
           </div>
         </div>
 
@@ -44,7 +66,7 @@
           <div class="kpi-card profit">
             <div class="label">Gross Profit</div>
             <div class="value" id="kpiProfit">—</div>
-            <div class="sub">RWF today</div>
+            <div class="sub">RWF</div>
           </div>
         </div>
 
@@ -86,7 +108,8 @@
         <div class="col-12">
           <div class="chart-card">
             <div class="section-title">
-              Today's Transactions (<span id="txnCount">0</span> line items)
+              Top 100 Transactions by Revenue
+              <span id="txnCount">0</span> line items
             </div>
             <div style="overflow-x: auto; max-height: 380px; overflow-y: auto">
               <table class="table table-hover mb-0">
