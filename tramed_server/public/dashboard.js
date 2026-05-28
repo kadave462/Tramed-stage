@@ -88,6 +88,85 @@ async function loadDashboard() {
       `;
     }
   }
+
+  // ── Top Products chart ──────────────────────────────────
+
+  const revenueByProduct = {};
+  for (const sale of todaySales) {
+    const name = sale.productName;
+    revenueByProduct[name] = (revenueByProduct[name] || 0) + sale.totalAmount;
+  }
+  const sorted = Object.entries(revenueByProduct)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  new Chart(document.getElementById("chartTopProducts"), {
+    type: "bar",
+    data: {
+      labels: sorted.map((x) => x[0]),
+      datasets: [
+        {
+          label: "Revenue (RWF)",
+          data: sorted.map((x) => x[1]),
+          backgroundColor: "#1a7a4a",
+        },
+      ],
+    },
+    options: {
+      indexAxis: "y",
+      plugins: { legend: { display: true } },
+      scales: {
+        x: { beginAtZero: true },
+      },
+    },
+  });
+
+  // ── clients chart ──────────────────────────────────
+  const byHour = Array(24).fill(0);
+  for (const sale of todaySales) {
+    byHour[new Date(sale.date).getHours()] += sale.totalAmount ?? 0;
+  }
+  new Chart(document.getElementById("chartHourly"), {
+    type: "bar",
+    data: {
+      labels: byHour.map((_, i) => i + "h"),
+      datasets: [
+        { label: "Revenue", data: byHour, backgroundColor: "#f0a500" },
+      ],
+    },
+    options: { plugins: { legend: { display: false } } },
+  });
+
+  // ── Top Clients chart ──────────────────────────────────
+  const revenueByClient = {};
+  for (const sale of todaySales) {
+    const name = (
+      (sale.clientFirstName ?? "") +
+      " " +
+      (sale.clientLastName ?? "")
+    ).trim();
+    if (!name) continue;
+    revenueByClient[name] =
+      (revenueByClient[name] || 0) + (sale.totalAmount ?? 0);
+  }
+  const topClients = Object.entries(revenueByClient)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  new Chart(document.getElementById("chartTopClients"), {
+    type: "bar",
+    data: {
+      labels: topClients.map((x) => x[0]),
+      datasets: [
+        {
+          label: "Revenue (RWF)",
+          data: topClients.map((x) => x[1]),
+          backgroundColor: "#f0a500",
+        },
+      ],
+    },
+    options: { indexAxis: "y", plugins: { legend: { display: false } } },
+  });
 }
 
 loadDashboard();

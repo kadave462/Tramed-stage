@@ -28,6 +28,12 @@ model Sale {
   invoiceId     Int?
   costPrice     Float?
   totalCost     Float?
+  clientLastName  String?
+  clientFirstName String?
+  employe String?
+  societe String?
+  saleTime String?
+
 
     @@unique([invoiceId, productCode, quantity, unitPrice])
 

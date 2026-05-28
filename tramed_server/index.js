@@ -18,6 +18,11 @@ const SALES_MAPPING = {
   PRICE: "unitPrice",
   PRICE_REVIENT: "costPrice",
   TOTAL: "totalAmount",
+  NOM_CLIENT: "clientLastName",
+  PRENOM_CLIENT: "clientFirstName",
+  EMPLOYE: "employe",
+  SOCIETE: "societe",
+  time: "saleTime",
 };
 
 const STOCK_MAPPING = {
@@ -101,7 +106,10 @@ app.post("/api/upload", upload.single("file"), async function (req, res) {
       for (const key of Object.keys(record)) {
         if (record[key] === undefined) record[key] = null;
       }
+      if (record.societe != null) record.societe = String(record.societe);
+      if (record.saleTime != null) record.saleTime = String(record.saleTime);
       if (!record.productCode) continue;
+
       records.push(record);
     }
     if (fileType === "Sales") {
