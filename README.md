@@ -23,7 +23,7 @@ Built for **PHARMACIE TRAMED LTD** using real sales and stock data exported from
 | ORM          | Prisma                        |
 | Database     | PostgreSQL                    |
 | Frontend     | Vanilla JavaScript, HTML, CSS |
-|              |                later to React |   
+|              | later to React                |
 | File Parsing | xlsx (SheetJS)                |
 | File Upload  | Multer                        |
 
@@ -34,6 +34,7 @@ This is a full-stack web application that imports raw pharmacy sales and stock d
 The dashboard allows filtering by date range and shows revenue, cost, gross profit, top products, top clients, and stock alerts in real time.
 
 ---
+
 ## 3. How to Run the Project
 
 ```bash
@@ -68,21 +69,21 @@ A single-table-per-entity approach was chosen because the source data comes as f
 
 ### Sale table — one row per product line item sold
 
-| Field           | Type     | Description                                        |
-| --------------- | -------- | -------------------------------------------------- |
-| id              | Int      | Auto-increment primary key                         |
-| invoiceId       | String   | Invoice number                                     |
-| date            | Date | Date  of sale                                          |
-| productCode     | String   | Product identifier                                 |
-| productName     | String   | Product name                                       |
-| quantity        | Int      | Quantity sold                                      |
-| unitPrice       | Float    | Selling price per unit                             |
-| costPrice       | Float    | Purchase price per unit                            |
-| totalAmount     | Float    | Total revenue for this line (unitPrice x quantity) |
-| clientFirstName | String   | Client first name                                  |
-| clientLastName  | String   | Client last name                                   |
-| employe         | String   | Employee who made the sale                         |
-| societe         | String   | insurance compnay name if applicable                |
+| Field           | Type   | Description                                        |
+| --------------- | ------ | -------------------------------------------------- |
+| id              | Int    | Auto-increment primary key                         |
+| invoiceId       | String | Invoice number                                     |
+| date            | Date   | Date of sale                                       |
+| productCode     | String | Product identifier                                 |
+| productName     | String | Product name                                       |
+| quantity        | Int    | Quantity sold                                      |
+| unitPrice       | Float  | Selling price per unit                             |
+| costPrice       | Float  | Purchase price per unit                            |
+| totalAmount     | Float  | Total revenue for this line (unitPrice x quantity) |
+| clientFirstName | String | Client first name                                  |
+| clientLastName  | String | Client last name                                   |
+| employe         | String | Employee who made the sale                         |
+| societe         | String | insurance compnay name if applicable               |
 
 ### Stock table — one row per product in inventory
 
@@ -164,21 +165,6 @@ Flag for reorder if estimated_days_remaining < 7
 ```
 
 The columns average_daily_sales, estimated_days_remaining, and recommended_reorder_quantity do not appear in the dashboard.
-
----
-
-## 9. What I Would Improve With More Time
-
-- Add the full reorder formula with estimated days remaining and recommended order quantity per product
-- Add a daily sales trend chart showing revenue per day
-- Add demand forecasting — predict next 7 days using average_daily_sales x 7
-- Add product categories to enable category-level analysis
-- Split routes, business logic, and database queries into separate files (MVC structure)
-- Add user authentication so only pharmacy staff can access the dashboard
-- Adding sales pattern analysis
-- A way of seeing any unusual sales pattern or stock issue
-
-
 
 ---
 
