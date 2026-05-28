@@ -171,12 +171,14 @@ The columns average_daily_sales, estimated_days_remaining, and recommended_reord
 
 - Add the full reorder formula with estimated days remaining and recommended order quantity per product
 - Add a daily sales trend chart showing revenue per day
-- Add customer segmentation — Frequent (5+ purchases), Occasional (2-5), One-time (1 purchase)
 - Add demand forecasting — predict next 7 days using average_daily_sales x 7
-- Move filtering to the server so the browser does not download all records at once
 - Add product categories to enable category-level analysis
 - Split routes, business logic, and database queries into separate files (MVC structure)
 - Add user authentication so only pharmacy staff can access the dashboard
+- Adding sales pattern analysis
+- A way of seeing any unusual sales pattern or stock issue
+
+
 
 ---
 
